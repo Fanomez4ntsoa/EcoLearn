@@ -2,16 +2,31 @@
 
 namespace App\Models;
 
-use Illuminate\Auth\Authenticatable;
-use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Scopes\UnexpiredScope;
 use Illuminate\Database\Eloquent\Model;
-use Laravel\Lumen\Auth\Authorizable;
 
-class User extends Model implements AuthenticatableContract, AuthorizableContract
+class User extends Model
 {
-    use Authenticatable, Authorizable, HasFactory;
+    /**
+     * The table associated with the model
+     *
+     * @var string
+     */
+    protected $table = 'users';
+
+    /**
+     * Primary Key
+     *
+     * @var string
+     */
+    protected $primaryKey = 'user_id';
+
+    /**
+     * Indicates if the model should be timestampted
+     *
+     * @var boolean
+     */
+    public $timestamps = false;
 
     /**
      * The attributes that are mass assignable.
@@ -19,7 +34,12 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      * @var string[]
      */
     protected $fillable = [
-        'name', 'email',
+        'username', 
+        'email',
+        'token',
+        'token_valid_from',
+        'token_valid_till',
+        'created_at'
     ];
 
     /**
@@ -29,5 +49,33 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      */
     protected $hidden = [
         'password',
+        'token',
+        'token_valid_from',
+        'token_valid_till',
     ];
+
+    /**
+     * The attributes that should be cast
+     *
+     * @var array
+     */
+    protected $casts = [
+        'created_at'        => 'datetime',
+        'token_valid_from'  => 'datetime',
+        'token_valid_till'  => 'datetime'
+    ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $model->Valid_From = $model->freshTimestamp();
+        });
+    }
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new UnexpiredScope());
+    }
 }

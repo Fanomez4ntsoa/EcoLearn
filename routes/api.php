@@ -12,3 +12,7 @@
 | and give it the Closure to call when that URI is requested.
 |
 */
+
+$router->group(['prefix' => 'auth'], function($router) {
+    $router->post('', 'AuthController@login');
+});
