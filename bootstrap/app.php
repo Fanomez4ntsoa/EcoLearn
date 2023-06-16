@@ -60,6 +60,10 @@ $app->singleton(
 */
 
 $app->configure('app');
+$app->configure('auth');
+$app->configure('database');
+$app->configure('hashing');
+$app->configure('jwt');
 
 /*
 |--------------------------------------------------------------------------
@@ -79,10 +83,6 @@ $app->middleware([
 $app->routeMiddleware([
     'auth' => App\Http\Middleware\Authenticate::class,
 ]);
-// $app->middleware([
-//     App\Http\Middleware\ExampleMiddleware::class
-// ]);
-
 
 /*
 |--------------------------------------------------------------------------
@@ -98,6 +98,8 @@ $app->routeMiddleware([
 $app->register(App\Providers\AppServiceProvider::class);
 $app->register(App\Providers\AuthServiceProvider::class);
 $app->register(App\Providers\EventServiceProvider::class);
+$app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
+
 if (env('APP_ENV') === 'local') {
     $app->register(Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
 }
