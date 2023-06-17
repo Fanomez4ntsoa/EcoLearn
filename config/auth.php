@@ -61,8 +61,8 @@ return [
 
     'providers' => [
         'users' => [
-            'driver' => 'meetad',
-            // 'model' => App\Meetad\Models\User::class,
+            'driver' => 'ecoLearn',
+            // 'model' => App\EcoLearn\Models\User::class,
         ],
 
         // 'users' => [

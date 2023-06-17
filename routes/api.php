@@ -15,4 +15,7 @@
 
 $router->group(['prefix' => 'auth'], function($router) {
     $router->post('', 'AuthController@login');
+    $router->get('', 'AuthController@me');
+    $router->post('logout', 'AuthController@logout');
+    $router->post('refresh', 'AuthController@refresh');
 });

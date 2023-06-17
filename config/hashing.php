@@ -50,7 +50,7 @@ return [
     ],
 
     /**
-     * Meetad specific configuration for hashing
+     * EcoLearn specific configuration for hashing
      */
     'EcoLearn' => [
         'salt' => env('PASSWORD_SALT', 'EcoLearnClient'),
