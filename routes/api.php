@@ -19,3 +19,7 @@ $router->group(['prefix' => 'auth'], function($router) {
     $router->post('logout', 'AuthController@logout');
     $router->post('refresh', 'AuthController@refresh');
 });
+
+$router->group(['prefix' => 'user', 'namespace' => 'User'], function($router) {
+    $router->post('create', 'UserController@create');
+});

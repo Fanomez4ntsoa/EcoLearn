@@ -52,7 +52,7 @@ return [
     /**
      * EcoLearn specific configuration for hashing
      */
-    'EcoLearn' => [
+    'ecoLearn' => [
         'salt' => env('PASSWORD_SALT', 'EcoLearnClient'),
     ],
 ];

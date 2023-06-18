@@ -36,6 +36,9 @@ class User extends Model
     protected $fillable = [
         'username', 
         'email',
+        'isAdmin',
+        'Valid_From',
+        'Valid_Till',
         'token',
         'token_valid_from',
         'token_valid_till',
@@ -60,6 +63,9 @@ class User extends Model
      * @var array
      */
     protected $casts = [
+        'isAdmin'           => 'boolean',
+        'Valid_From'        => 'datetime',
+        'Valid_Till'        => 'datetime',
         'created_at'        => 'datetime',
         'token_valid_from'  => 'datetime',
         'token_valid_till'  => 'datetime'
@@ -70,7 +76,7 @@ class User extends Model
         parent::boot();
 
         static::creating(function ($model) {
-            $model->Valid_From = $model->freshTimestamp();
+            $model->created_at = $model->freshTimestamp();
         });
     }
 

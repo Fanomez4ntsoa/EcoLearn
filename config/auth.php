@@ -61,14 +61,9 @@ return [
 
     'providers' => [
         'users' => [
-            'driver' => 'ecoLearn',
-            // 'model' => App\EcoLearn\Models\User::class,
+            'driver'    => 'ecoLearn',
+            'model'     => App\EcoLearn\Models\User::class,
         ],
-
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
     ],
 
     /*

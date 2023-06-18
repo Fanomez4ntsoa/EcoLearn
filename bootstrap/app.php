@@ -64,6 +64,8 @@ $app->configure('auth');
 $app->configure('database');
 $app->configure('hashing');
 $app->configure('jwt');
+$app->configure('result-code');
+$app->configure('access');
 
 /*
 |--------------------------------------------------------------------------
@@ -96,6 +98,7 @@ $app->routeMiddleware([
 */
 
 $app->register(App\Providers\AppServiceProvider::class);
+$app->register(\App\Providers\ExtensionServiceProvider::class);
 $app->register(App\Providers\AuthServiceProvider::class);
 $app->register(App\Providers\EventServiceProvider::class);
 $app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);

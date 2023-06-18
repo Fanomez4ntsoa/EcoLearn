@@ -15,6 +15,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(\App\Contracts\User\UserServiceInterface::class, \App\Services\User\UserService::class);
         $this->app->bind(\App\Contracts\Security\GuardServiceInterface::class, \App\Services\Security\GuardService::class);
+        $this->app->bind(\App\Contracts\EcoLearn\AccountServiceInterface::class, \App\Services\EcoLearn\AccountService::class);
     }
 
     /**

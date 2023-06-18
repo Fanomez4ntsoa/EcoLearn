@@ -1,0 +1,8 @@
+<?php
+
+/**
+ * User
+ */
+define('SUCCESS_USER_CREATED', 200400);
+define('ERROR_USER_CREATED', 500400);
+define('ERROR_PROFILE_UNDEFINED', 500401);
