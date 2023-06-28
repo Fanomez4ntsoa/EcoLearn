@@ -66,6 +66,8 @@ $app->configure('hashing');
 $app->configure('jwt');
 $app->configure('result-code');
 $app->configure('access');
+$app->configure('mail');
+$app->configure('view');
 
 /*
 |--------------------------------------------------------------------------
@@ -102,10 +104,22 @@ $app->register(\App\Providers\ExtensionServiceProvider::class);
 $app->register(App\Providers\AuthServiceProvider::class);
 $app->register(App\Providers\EventServiceProvider::class);
 $app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
+$app->register(\Illuminate\Mail\MailServiceProvider::class);
+$app->register(\Illuminate\Notifications\NotificationServiceProvider::class);
 
 if (env('APP_ENV') === 'local') {
     $app->register(Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
 }
+
+$app->alias('mail', \Illuminate\Mail\MailManager::class);
+$app->alias('mail.manager', \Illuminate\Mail\MailManager::class);
+$app->alias('mail.manager', \Illuminate\Contracts\Mail\Factory::class);
+
+$app->alias('mailer', \Illuminate\Mail\Mailer::class);
+$app->alias('mailer', \Illuminate\Contracts\Mail\Mailer::class);
+$app->alias('mailer', \Illuminate\Contracts\Mail\MailQueue::class);
+
+$app->alias('view', Illuminate\View\Factory::class);
 
 /*
 |--------------------------------------------------------------------------

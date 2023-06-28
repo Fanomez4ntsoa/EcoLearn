@@ -9,6 +9,8 @@
         "flipbox/lumen-generator": "^9.2",
         "illuminate/console": "^10.13",
         "illuminate/contracts": "^10.13",
+        "illuminate/mail": "^10.14",
+        "illuminate/notifications": "^10.14",
         "laravel/lumen-framework": "^10.0",
         "tymon/jwt-auth": "*"
     },

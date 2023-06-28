@@ -4,9 +4,12 @@ namespace App\Models;
 
 use App\Models\Scopes\UnexpiredScope;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
 
 class User extends Model
 {
+    use Notifiable;
+    
     /**
      * The table associated with the model
      *
@@ -34,6 +37,7 @@ class User extends Model
      * @var string[]
      */
     protected $fillable = [
+        'name',
         'username', 
         'email',
         'isAdmin',
@@ -83,5 +87,16 @@ class User extends Model
     protected static function booted()
     {
         static::addGlobalScope(new UnexpiredScope());
+    }
+
+    /**
+     * Get email for notification
+     *
+     * @deprecated User \App\EcoLearn\Models\User instead of \App\Models\User
+     * @return void
+     */
+    public function routeNotificationForMail(): string|null
+    {
+        return $this->email;
     }
 }

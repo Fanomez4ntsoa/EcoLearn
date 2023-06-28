@@ -5,6 +5,7 @@ namespace App\Services\User;
 use App\Contracts\EcoLearn\AccountServiceInterface;
 use App\Contracts\User\UserServiceInterface;
 use App\EcoLearn\Models\User;
+use App\Events\User\UserCreatedEvent;
 use Illuminate\Support\Str;
 use App\Models\Scopes\UnexpiredScope;
 use Illuminate\Support\Carbon;
@@ -34,12 +35,13 @@ class UserService implements UserServiceInterface
                     })
                     ->first();
         if($user) {
-            $creationDate = to_datetime($user->created_at);
+            $creationDate   = to_datetime($user->created_at);
             $tokenValidFrom = to_datetime($user->token_valid_from);
             $tokenValidTill = to_datetime($user->token_valid_till);
 
             $newUser = new User();
             $newUser->id            = $user->user_id;
+            $newUser->name          = $user->name;
             $newUser->username      = $user->username;
             $newUser->email         = $user->email;
             $newUser->created_at    = $creationDate;
@@ -110,7 +112,6 @@ class UserService implements UserServiceInterface
         $tokenValidFrom = $now;
 
         DB::beginTransaction();
-        
         try {
             $userExists = DB::table('users')
                     ->where('email', $email)
@@ -212,11 +213,12 @@ class UserService implements UserServiceInterface
                                 ->where('profile_id', $profileId)
                                 ->get();
 
+                $userExists = $this->find($userId);
+                
                 if($accesses) {
-                    $user = $this->find($userId);
-                    // if($newUser) {
-                    //     event(new UserCreatedEvent($user->id, $token));
-                    // }
+                    if($newUser) {
+                        event(new UserCreatedEvent($userExists, $token));
+                    }
 
                 }
                 DB::commit();

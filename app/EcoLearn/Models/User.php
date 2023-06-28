@@ -5,13 +5,14 @@ namespace App\EcoLearn\Models;
 use DateTimeInterface;
 use Illuminate\Auth\Authenticatable;
 use Laravel\Lumen\Auth\Authorizable;
+use Tymon\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
-use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User implements AuthenticatableContract, AuthorizableContract, JWTSubject
 {
-    use Authenticatable, Authorizable;
+    use Authenticatable, Notifiable, Authorizable;
     
     /**
      * User id
@@ -19,6 +20,13 @@ class User implements AuthenticatableContract, AuthorizableContract, JWTSubject
      * @var integer
      */
     public int $id;
+
+    /**
+     * User username
+     *
+     * @var string
+     */
+    public $name;
 
     /**
      * User username
@@ -68,6 +76,16 @@ class User implements AuthenticatableContract, AuthorizableContract, JWTSubject
      * @var string|null
      */
     private ?string $passwordToken;
+
+    /**
+     * Get user full name
+     *
+     * @return string
+     */
+    public function getFullname(): string 
+    {
+        return trim($this->name . ' ' . $this->username);
+    }
 
     /**
      * Set hashed password value
@@ -128,5 +146,15 @@ class User implements AuthenticatableContract, AuthorizableContract, JWTSubject
     public function getJWTCustomClaims()
     {
         return [];
+    }
+
+    /**
+     * Get email for notification
+     *
+     * @return string
+     */
+    public function routeNotificationForMail(): string|null
+    {
+        return $this->email;
     }
 }
