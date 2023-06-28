@@ -72,8 +72,8 @@ class UserService implements UserServiceInterface
                     ->first();
         if($user) {
             $creationDate = to_datetime($user->created_at);
-            $tokenValidFrom = to_datetime($user->Token_Valid_From);
-            $tokenValidTill = to_datetime($user->Token_Valid_Till);
+            $tokenValidFrom = to_datetime($user->token_valid_from);
+            $tokenValidTill = to_datetime($user->token_valid_till);
 
             $newUser = new User();
             $newUser->id            = $user->user_id;
@@ -84,7 +84,7 @@ class UserService implements UserServiceInterface
             $newUser->tokenValidTill= $tokenValidTill;
             $newUser
                     ->setHashedPassword($user->password)
-                    ->setPasswordToken($user->Token);
+                    ->setPasswordToken($user->token);
 
             return $newUser;
         }
@@ -199,6 +199,7 @@ class UserService implements UserServiceInterface
                         DB::table('profile_access')
                             ->insert([
                                 'profile_id'    => $profileId,
+                                'user_id'       => $userId,
                                 'access_id'     => $accessId
                             ]);
 
@@ -210,6 +211,7 @@ class UserService implements UserServiceInterface
                 
                 $accesses = DB::table('profile_access')
                                 ->join('accessRight', 'accessRight.access_id', '=', 'profile_access.access_id')
+                                ->join('users', 'users.user_id', '=', 'profile_access.user_id')
                                 ->where('profile_id', $profileId)
                                 ->get();
 

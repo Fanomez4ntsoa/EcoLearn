@@ -17,6 +17,14 @@ class EventServiceProvider extends ServiceProvider
         ],
         \App\Events\User\UserCreatedEvent::class => [
             \App\Listeners\User\SendUserCreated::class
+        ],
+        \App\Events\Security\PasswordSetEvent::class => [
+            \App\Listeners\Security\LogPasswordSet::class,
+            \App\Listeners\Security\NotifyPasswordUpdate::class,
+        ],
+        \App\Events\Security\PasswordResetEvent::class => [
+            \App\Listeners\Security\PasswordResetNotifier::class,
+            \App\Listeners\Security\PasswordResetActivityLogger::class,
         ]
     ];
 

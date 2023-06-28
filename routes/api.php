@@ -20,6 +20,12 @@ $router->group(['prefix' => 'auth'], function($router) {
     $router->post('refresh', 'AuthController@refresh');
 });
 
+$router->group(['prefix' => 'security', 'namespace' => 'Security'], function ($router) {
+    $router->post('password/decode-token', 'PasswordController@decodeToken');
+    $router->post('password/reset', 'PasswordController@resetPassword');
+    $router->post('password/set', 'PasswordController@setPassword');
+});
+
 $router->group(['prefix' => 'user', 'namespace' => 'User'], function($router) {
     $router->post('create', 'UserController@create');
 });

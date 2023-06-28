@@ -1,41 +1,47 @@
-<?php
+<?php 
 
-namespace App\Notification\User;
+namespace App\Notification\Security;
 
+use DateTimeInterface;
 use Illuminate\Bus\Queueable;
+use App\EcoLearn\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 
-class ValidationAccountEmail extends Notification implements ShouldQueue
+class PasswordResetEmail extends Notification implements ShouldQueue
 {
     use Queueable;
 
     /**
-     * Create a notification instance
+     * Create a new notification instance
      *
+     * @param User $user
      * @param string $token
+     * @param DateTimeInterface $expirationDate
      */
     public function __construct(
-        protected string $token
+        protected User $user,
+        protected string $token,
+        protected DateTimeInterface $expirationDate
     ) {
         $this->onQueue('email');
     }
 
     /**
-     * Get the notification's delivery channel
+     * Get the notification's delivery channels.
      *
      * @param mixed $notifiable
-     * @return array
+     * @return void
      */
-    public function via($notifiable): array
+    public function via($notifiable)
     {
         return ['mail'];
     }
 
     /**
-     * Generate the email content
+     * Get the mail representation of the notification.
      *
      * @param mixed $notifiable
      * @return MailMessage
@@ -46,16 +52,18 @@ class ValidationAccountEmail extends Notification implements ShouldQueue
         $token = $this->token;
         $hash  = encrypt(json_encode(compact('email','token')));
         $url   = config('app.web.url', '#') . '/account/password/' . $hash;
-        $expirationDate = Carbon::now()->addMinutes(config('ecoLearn.security.password.token.expiration'));
+        $name  = $this->user->getFullname();
+        $expirationDate = Carbon::createFromInterface($this->expirationDate);
 
         return (new MailMessage())
-            ->subject(__('mail.signed_up.subject', ['name' => $notifiable->getFullname()]))
-            ->greeting(__('mail.greeting', ['name' => $notifiable->getFullname()]))
-            ->line(__('mail.signed_up.content.confirmation'))
-            ->action(__('mail.signed_up.action'), $url) 
+            ->subject(__('mail.password.reset.subject', ['name' => $name]))
+            ->greeting(__('mail.greeting', ['name' => $name]))
+            ->line(__('mail.password.reset.line1'))
+            ->line(__('mail.password.reset.line2'))
+            ->action(__('mail.password.reset.action'), $url)
             ->line(__('mail.link_expiration', [
                 'date' => $expirationDate->format(__('date.format.date.short')),
                 'hour' => $expirationDate->format(__('date.format.hour.short')),
-        ]));
+            ]));
     }
 }

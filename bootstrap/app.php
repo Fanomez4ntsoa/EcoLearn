@@ -68,6 +68,9 @@ $app->configure('result-code');
 $app->configure('access');
 $app->configure('mail');
 $app->configure('view');
+$app->configure('queue');
+$app->configure('activity');
+$app->configure('ecoLearn');
 
 /*
 |--------------------------------------------------------------------------
@@ -103,7 +106,7 @@ $app->register(App\Providers\AppServiceProvider::class);
 $app->register(\App\Providers\ExtensionServiceProvider::class);
 $app->register(App\Providers\AuthServiceProvider::class);
 $app->register(App\Providers\EventServiceProvider::class);
-$app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
+$app->register(\Tymon\JWTAuth\Providers\LumenServiceProvider::class);
 $app->register(\Illuminate\Mail\MailServiceProvider::class);
 $app->register(\Illuminate\Notifications\NotificationServiceProvider::class);
 
