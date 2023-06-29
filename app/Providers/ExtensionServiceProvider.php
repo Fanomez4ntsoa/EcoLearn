@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\EcoLearn\Providers\UserProvider;
+use App\EcoLearn\Providers\UserProviders;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 
@@ -30,8 +31,7 @@ class ExtensionServiceProvider extends ServiceProvider
         });
 
         Auth::provider('ecoLearn', function ($app, $config) {
-            return $app->make(UserProvider::class, $config);
+            return $app->make(UserProviders::class, $config);
         });
-
     }
 }

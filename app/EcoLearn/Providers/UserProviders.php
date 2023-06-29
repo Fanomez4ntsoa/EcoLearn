@@ -2,18 +2,17 @@
 
 namespace App\EcoLearn\Providers;
 
-use App\Contracts\User\UserServiceInterface;
 use App\EcoLearn\Models\User;
 use Illuminate\Support\Facades\Hash;
+use App\Contracts\User\UserServiceInterface;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider as LaravelUserProvider;
 
-class UserProvider implements LaravelUserProvider
+class UserProviders implements LaravelUserProvider
 {
     public function __construct(
         protected UserServiceInterface $userService
     ) {
-        //
     }
 
     /**

@@ -46,6 +46,8 @@ class UserController extends Controller
                 );
             }
 
+            dd('here');
+            
             $status = $this->userService->create($request->email, $request->name, $request->username, $request->profile);
 
             if($status === SUCCESS_USER_CREATED) {

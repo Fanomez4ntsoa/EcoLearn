@@ -40,7 +40,6 @@ class PasswordController extends Controller
             }
 
             $data = json_decode(decrypt($request->token));
-            // dd($data);
             if($data->email && $data->token) {
                 if($this->passwordService->verifyToken($data->email, $data->token)) {
                     if($this->passwordService->setPassword($data->email, $request->password)) {

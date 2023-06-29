@@ -17,7 +17,7 @@ class AuthController extends Controller
         protected UserServiceInterface $userService,
         protected GuardServiceInterface $guardService,
     ) {
-        $this->middleware('auth:api', ['except' => 'login']);
+        $this->middleware('auth:api', ['except' => ['login']]);
     }
 
     /**
@@ -41,13 +41,24 @@ class AuthController extends Controller
             );
         }
 
-        try {
+            // $user = $this->userService->findByEmail($request->email);
+            // if($user) {
+            //     if(Hash::check($request->password, $user->getHashedPassword())) {
+            //         $customClaims = ["accesses" => $this->guardService->index($user), "user" => $user];
+            //         $token = Auth::claims($customClaims)->login($user);
+            //         return $this->success(data: compact('token'));
+            //     }
+            //     return $this->error(
+            //         message:__('error.auth.password'),
+            //         data: ['password' => [__('error.auth.password')]],
+            //         httpCode: 400,
+            //     );
+            // }
             $user = $this->userService->findByEmail($request->email);
             if($user) {
                 if(Hash::check($request->password, $user->getHashedPassword())) {
                     $customClaims = ["accesses" => $this->guardService->index($user), "user" => $user];
-                    dd(Auth::check());
-
+                    // dd(Auth::login($user));
                     $token = Auth::claims($customClaims)->login($user);
                     return $this->success(data: compact('token'));
                 }
@@ -62,11 +73,8 @@ class AuthController extends Controller
                 data:['password' => [__('error.auth.email')]],
                 httpCode: 400,
             );
-        } catch (\Throwable $th) {
-            Log::error($th->getMessage(), $th->getTrace());
-        }
 
-        return $this->success(message:__('success.default'));
+        // return $this->success(message:__('success.default'));
     }
 
     /**
