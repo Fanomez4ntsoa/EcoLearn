@@ -30,7 +30,6 @@ class PasswordService implements PasswordServiceInterface
     public function verifyToken(string $email, string $token): bool
     {
         $user = $this->userService->findByEmail($email);
-        // dd('ato');
         if($user) {
             $hashedToken = $user->getPasswordToken();
             if(Hash::make($token) === $hashedToken) {

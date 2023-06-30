@@ -19,7 +19,7 @@ class AccountService implements AccountServiceInterface
      * @param string $accountId
      * @return string|null
      */
-    public function getProfile(string $email, ?string $profileId): ?string
+    public function getProfile(?string $profileId): ?string
     {
         $defaultProfileId = 1;
 

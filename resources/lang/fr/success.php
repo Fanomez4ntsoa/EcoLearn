@@ -12,5 +12,8 @@ return [
             'token_valid' => 'Jeton de mot de passe valide',
             'set'     => 'Nouveau mot de passe enregistré'
         ],
-    ]
+    ],
+    'quiz'  => [
+        'create'    => 'Un nouveau Quiz a été créer.'
+    ],
 ];

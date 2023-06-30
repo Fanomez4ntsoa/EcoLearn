@@ -44,7 +44,6 @@ class PasswordController extends Controller
                 if($this->passwordService->verifyToken($data->email, $data->token)) {
                     if($this->passwordService->setPassword($data->email, $request->password)) {
                         return $this->success(__('success.security.password.set'));
-                        // dd('here');
                     }
                 }
             }

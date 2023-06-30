@@ -101,11 +101,10 @@ class UserService implements UserServiceInterface
      */
     public function create(string $email, string $name, string $username, ?string $profileId): int
     {
-        $userProfile = $this->accountService->getProfile($email, $profileId);
+        $userProfile = $this->accountService->getProfile($profileId);
         if(!$userProfile) {
             return ERROR_PROFILE_UNDEFINED;
         }
-        // dd($userProfile);
 
         $now = Carbon::now();
         $token = Str::random(30);
@@ -227,8 +226,6 @@ class UserService implements UserServiceInterface
                 return SUCCESS_USER_CREATED;
             }
         } catch (\Throwable $th) {
-            dd($th->getMessage());
-            
             DB::rollBack();
             return ERROR_USER_CREATED;
         }

@@ -11,5 +11,5 @@ interface AccountServiceInterface
      * @param string $group
      * @return string|null
      */
-    public function getProfile(string $email, ?string $profileId): ?string;
+    public function getProfile(?string $profileId): ?string;
 }

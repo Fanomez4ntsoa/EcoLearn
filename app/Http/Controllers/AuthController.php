@@ -41,40 +41,25 @@ class AuthController extends Controller
             );
         }
 
-            // $user = $this->userService->findByEmail($request->email);
-            // if($user) {
-            //     if(Hash::check($request->password, $user->getHashedPassword())) {
-            //         $customClaims = ["accesses" => $this->guardService->index($user), "user" => $user];
-            //         $token = Auth::claims($customClaims)->login($user);
-            //         return $this->success(data: compact('token'));
-            //     }
-            //     return $this->error(
-            //         message:__('error.auth.password'),
-            //         data: ['password' => [__('error.auth.password')]],
-            //         httpCode: 400,
-            //     );
-            // }
-            $user = $this->userService->findByEmail($request->email);
-            if($user) {
-                if(Hash::check($request->password, $user->getHashedPassword())) {
-                    $customClaims = ["accesses" => $this->guardService->index($user), "user" => $user];
-                    // dd(Auth::login($user));
-                    $token = Auth::claims($customClaims)->login($user);
-                    return $this->success(data: compact('token'));
-                }
-                return $this->error(
-                    message:__('error.auth.password'),
-                    data: ['password' => [__('error.auth.password')]],
-                    httpCode: 400,
-                );
+        $user = $this->userService->findByEmail($request->email);
+        if($user) {
+            if(Hash::check($request->password, $user->getHashedPassword())) {
+                $customClaims = ["accesses" => $this->guardService->index($user), "user" => $user];
+                // dd(Auth::login($user));
+                $token = Auth::claims($customClaims)->login($user);
+                return $this->success(data: compact('token'));
             }
             return $this->error(
                 message:__('error.auth.password'),
-                data:['password' => [__('error.auth.email')]],
+                data: ['password' => [__('error.auth.password')]],
                 httpCode: 400,
             );
-
-        // return $this->success(message:__('success.default'));
+        }
+        return $this->error(
+            message:__('error.auth.password'),
+            data:['password' => [__('error.auth.email')]],
+            httpCode: 400,
+        );
     }
 
     /**

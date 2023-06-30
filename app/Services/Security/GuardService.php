@@ -17,10 +17,10 @@ class GuardService implements GuardServiceInterface
     public function index(User $user): array
     {
         $query = DB::table('profile_access')
-            ->join('accessRight', 'accessRight.access_id', '=', 'profile_access.access_id')
-            ->join('profiles', 'profiles.profile_id', '=', 'profile_access.profile_id')
-            ->join('users', 'users.user_id', '=', 'profile_access.user_id')
-            ->where('profile_access.user_id', $user->id);
+                    ->join('accessRight', 'accessRight.access_id', '=', 'profile_access.access_id')
+                    ->join('profiles', 'profiles.profile_id', '=', 'profile_access.profile_id')
+                    ->join('users', 'users.user_id', '=', 'profile_access.user_id')
+                    ->where('profile_access.user_id', $user->id);
             
         $query->distinct();
 
@@ -35,5 +35,24 @@ class GuardService implements GuardServiceInterface
             'email'     => $user->email,
             'accesses'  => $accesses,
         ];
+    }
+
+    /**
+     * Check user access
+     *
+     * @param User $user
+     * @param string $access
+     * @return boolean
+     */
+    public function allows(User $user, string $access): bool
+    {
+        $query = DB::table('profile_access')
+                    ->join('accessRight', 'accessRight.access_id', '=', 'profile_access.access_id')
+                    ->join('profiles', 'profiles.profile_id', '=', 'profile_access.profile_id')
+                    ->join('users', 'users.user_id', '=', 'profile_access.user_id')
+                    ->where('profile_access.user_id', $user->id)
+                    ->where('accessRight.key', $access);
+
+        return !!$query->first();
     }
 }

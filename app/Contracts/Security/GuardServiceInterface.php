@@ -13,4 +13,13 @@ interface GuardServiceInterface
      * @return array
      */
     public function index(User $user): array;
+
+    /**
+     * Check user access
+     *
+     * @param User $user
+     * @param string $access
+     * @return boolean
+     */
+    public function allows(User $user, string $access): bool;
 }

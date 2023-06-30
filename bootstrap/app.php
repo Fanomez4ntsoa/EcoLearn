@@ -71,6 +71,7 @@ $app->configure('view');
 $app->configure('queue');
 $app->configure('activity');
 $app->configure('ecoLearn');
+$app->configure('constant');
 
 /*
 |--------------------------------------------------------------------------
