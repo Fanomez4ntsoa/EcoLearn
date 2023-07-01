@@ -17,7 +17,8 @@ return [
             'not_found'    => 'Le categorie séléctionner n\'existe pas ou à été supprimer. Veuillez le créer svp.',
             'exists'    => 'Un quiz existe déjà pour la catégorie donnée.',
         ],
-        'create'    => 'Erreur s\'est produite lors de la création d\'un quizz'
+        'create'    => 'Erreur s\'est produite lors de la création d\'un quizz',
+        'question'  => 'Erreur lors de la création d\'un Question'
     ],
     'access'    => [
         'denied'    => 'Vous n\'avez pas l\'autorisation à faire cette demande. ',

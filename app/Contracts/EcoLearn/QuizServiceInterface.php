@@ -23,4 +23,14 @@ interface QuizServiceInterface
      * @return string
      */
     public function create(User $user, int $category): ?int;
+
+    /**
+     * Question quizz
+     *
+     * @param User $user
+     * @param integer $quiz
+     * @param string $text
+     * @return string|null
+     */
+    public function questionQuiz(int $quizId, string $text): ?string;
 }

@@ -24,6 +24,7 @@ $router->group(['prefix' => 'auth'], function($router) {
 $router->group(['prefix' => 'admin', 'namespace' => 'Admin'], function($router) {
     $router->group(['prefix' => 'quizz'], function($router) {
         $router->post('create', 'QuizController@quizCategory');
+        $router->post('question', 'QuizController@quizQuestion');
     });
 });
 

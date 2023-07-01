@@ -56,9 +56,4 @@ class Quiz extends Model
             $model->created_at = $model->freshTimestamp();
         });
     }
-
-    protected static function booted()
-    {
-        static::addGlobalScope(new UnexpiredScope());
-    }
 }

@@ -13,7 +13,8 @@ return [
             'set'     => 'Nouveau mot de passe enregistré'
         ],
     ],
-    'quiz'  => [
-        'create'    => 'Un nouveau Quiz a été créer.'
+    'quizz'  => [
+        'create'    => 'Un nouveau Quiz a été créer.',
+        'question'  => 'Nouveau quiz ajouter.'
     ],
 ];

@@ -23,7 +23,7 @@ class QuizController extends Controller
     }
 
     /**
-     * Create new Quizz by Admin
+     * Add new Quizz from category by Admin
      *
      * @param Request $request
      * @return JsonResponse
@@ -83,5 +83,53 @@ class QuizController extends Controller
         } catch (\Throwable $th) {
             Log::error($th->getMessage(), [$th]);
         }
+    }
+
+    /**
+     * Add new quiz question
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function quizQuestion(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'profile'       => 'integer',
+            'quiz_id'       => 'required|integer',
+            'question'      => 'required|max:64'
+        ]);
+
+        if($validator->fails()) {
+            return $this->error(
+                message:__('error.validations'),
+                data: $validator->errors(),
+                httpCode: 422
+            );
+        }
+
+        $user = Auth::user();
+        $profile = $this->accountService->getProfile($request->profile);
+
+        if($profile != ADMINISTRATION_ADMIN || !$this->guardService->allows($user, ACCESS_ADMIN_QUIZ)) {
+            return $this->error(
+                message:__('error.access.denied'),
+                httpCode: 401
+            );
+        }
+
+        $question = $this->quizService->questionQuiz($request->quiz_id, $request->question);
+        // dd($question);
+        if(!$question) {
+            return $this->error(
+                message:__('error.quizz.question'),
+                httpCode: 403
+            );
+        }
+
+        return $this->success(
+            message:__('success.quizz.question'),
+            data: $question,
+            httpCode: 201
+        );
     }
 }

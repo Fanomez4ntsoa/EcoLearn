@@ -5,6 +5,8 @@ namespace App\Services\EcoLearn;
 use App\Contracts\EcoLearn\QuizServiceInterface;
 use App\EcoLearn\Models\Quiz;
 use App\EcoLearn\Models\User;
+use App\Models\Quiz as ModelsQuiz;
+use App\Models\QuizQuestion;
 use App\Models\Scopes\UnexpiredScope;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -93,4 +95,31 @@ class QuizService implements QuizServiceInterface
         }
         return null;
     }
+
+    /**
+     * Add new Question into Quizz
+     *
+     * @param User $user
+     * @param integer $quiz
+     * @param string $text
+     * @return string|null
+     */
+    public function questionQuiz(int $quizId, string $text): ?string
+    {
+        // Vérifier si un Quiz existe
+        $quizExists = ModelsQuiz::where('quiz_id', $quizId)
+                            ->first();
+        if($quizExists) {
+            // Ajouter une question
+            $quizQuestion = QuizQuestion::create([
+                'quiz_id'           => $quizExists,
+                'question_text'     => $text
+            ]);
+            
+            $quizQuestion->save();
+            return $quizQuestion;
+        }
+        return null;
+    }
+
 }
