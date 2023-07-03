@@ -31,4 +31,5 @@ interface UserServiceInterface
      * @return integer
      */
     public function create(string $email, string $name, string $username, ?string $profileId): int;
+
 }

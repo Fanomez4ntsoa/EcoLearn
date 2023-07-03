@@ -26,6 +26,14 @@ $router->group(['prefix' => 'admin', 'namespace' => 'Admin'], function($router) 
         $router->post('create', 'QuizController@quizCategory');
         $router->post('question', 'QuizController@quizQuestion');
     });
+    $router->group(['prefix' => 'category'], function($router) {
+        $router->post('create', 'CategoryController@create');
+        $router->get('{category_id}', 'CategoryController@findByID');
+    });
+    $router->group(['prefix' => 'resource'], function($router) {
+        $router->post('create', 'ResourceController@create');
+        $router->post('{ressource_id}', 'ResourceController@findByID');
+    });
 });
 
 $router->group(['prefix' => 'security', 'namespace' => 'Security'], function ($router) {
@@ -38,3 +46,4 @@ $router->group(['prefix' => 'security', 'namespace' => 'Security'], function ($r
 $router->group(['prefix' => 'user', 'namespace' => 'User'], function($router) {
     $router->post('create', 'UserController@create');
 });
+
