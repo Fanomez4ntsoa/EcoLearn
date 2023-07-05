@@ -45,7 +45,6 @@ class AuthController extends Controller
         if($user) {
             if(Hash::check($request->password, $user->getHashedPassword())) {
                 $customClaims = ["accesses" => $this->guardService->index($user), "user" => $user];
-                // dd(Auth::login($user));
                 $token = Auth::claims($customClaims)->login($user);
                 return $this->success(data: compact('token'));
             }

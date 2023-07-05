@@ -118,7 +118,6 @@ class QuizController extends Controller
         }
 
         $question = $this->quizService->questionQuiz($request->quiz_id, $request->question);
-        // dd($question);
         if(!$question) {
             return $this->error(
                 message:__('error.quizz.question'),

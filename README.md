@@ -16,9 +16,13 @@ Documentation for the framework can be found on the [Lumen website](https://lume
 # Clone the project
 
 # Configuration 
-- configuration de l'environnement .env 
+- configuration de l'environnement .env
+- install package 
+    ' composer install '
 - création de le base de donnée 
 - migration des donnée dans la base
-    php artisan migrate
+    ' php artisan migrate '
 - seed the database with records
-    php artisan db:seed
+    ' php artisan db:seed '
+- run projet 
+    ' php artisan serve ' 

@@ -21,6 +21,7 @@ class ResourceController extends Controller
         protected ResourceServiceInterface $ressourceService,
         protected AccountServiceInterface $accountService
     ) {
+        $this->middleware('auth:api');
     }
 
     /**
@@ -56,8 +57,6 @@ class ResourceController extends Controller
                 );
             }
 
-
-
             $status = $this->ressourceService->create($request->category_id, $request->title, $request->description, $request->url);
 
             if ($status === 1) {
@@ -68,7 +67,6 @@ class ResourceController extends Controller
             }
             return $this->error();
         } catch (\Throwable $th) {
-            dd($th);
             Log::error($th->getMessage(), $th->getTrace());
             return $this->error();
         }
@@ -100,7 +98,6 @@ class ResourceController extends Controller
                 httpCode: 404
             );
         } catch (\Throwable $th) {
-            dd($th->getMessage());
             Log::error($th->getMessage(), $th->getTrace());
         }
     }

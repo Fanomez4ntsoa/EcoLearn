@@ -50,7 +50,6 @@ class CategoryController extends Controller
             $user = Auth::user();
             $profile = $this->accountService->getProfile($request->profile);
             
-            // dd($user);
             if($profile != ADMINISTRATION_ADMIN || !$this->guardService->allows($user, ACCESS_ADMIN_CATEGORIES)) {
                 return $this->error(
                     message:__('error.access.denied'),
@@ -68,7 +67,6 @@ class CategoryController extends Controller
             }
             return $this->error();
         } catch (\Throwable $th) {
-            dd($th->getMessage());
             Log::error($th->getMessage(), $th->getTrace());
             return $this->error();
         }
@@ -100,7 +98,6 @@ class CategoryController extends Controller
                 httpCode: 404
             );
         } catch (\Throwable $th) {
-            dd($th->getMessage());
             Log::error($th->getMessage(), $th->getTrace());
         }
     }
