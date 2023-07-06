@@ -41,4 +41,22 @@ interface UserServiceInterface
      */
     public function create(string $email, string $name, string $username, ?string $profileId): int;
 
+    /**
+     * Update user
+     *
+     * @param string $email
+     * @param string $name
+     * @param string $username
+     * @return boolean
+     */
+    public function update(User $user, string $email, string $name, string $username): bool;
+
+    /**
+     * Delete user
+     *
+     * @param User $user
+     * @return boolean
+     */
+    public function delete(User $user): bool;
+
 }

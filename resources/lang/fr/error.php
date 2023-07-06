@@ -5,7 +5,8 @@ return [
     'validations'    => 'Requête invalide.',
     'user'  => [
         'collection' => 'Aucun utilisateur',
-        'not_found' => 'Cette utilisateur n\'existe pas ou à été supprimer.'
+        'not_found' => 'Cette utilisateur n\'existe pas ou à été supprimer.',
+        'delete' => "La suppression a échouer",
     ],
     'security'  => [
         'password'  => [

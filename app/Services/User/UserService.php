@@ -234,7 +234,8 @@ class UserService implements UserServiceInterface
                         ACCESS_ADMIN_CATEGORIES         => '7',
                         ACCESS_ADMIN_BADGE              => '8',
                         ACCESS_ADMIN_QUIZ               => '9',
-                        ACCESS_ADMIN_STATISTIQUE        => '10'
+                        ACCESS_ADMIN_STATISTIQUE        => '10',
+                        ACCESS_ADMIN_USER               => '16'
                     ];
                 }
                 
@@ -270,10 +271,64 @@ class UserService implements UserServiceInterface
                 return SUCCESS_USER_CREATED;
             }
         } catch (\Throwable $th) {
-            dd($th->getMessage());
             DB::rollBack();
             return ERROR_USER_CREATED;
         }
-        
+    }
+
+    /**
+     * Update user
+     *
+     * @param string $email
+     * @param string $name
+     * @param string $username
+     * @return boolean
+     */
+    public function update(User $user, string $email, string $name, string $username): bool
+    {
+        DB::beginTransaction();
+        try {
+            DB::table('users')
+                ->where('user_id', $user->id)
+                ->update([
+                    'name'      => $name,
+                    'username'  => $username,
+                    'email'     => $email
+                ]);
+
+            DB::commit();
+            return true;
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Log::error($th->getMessage(), [$th]);
+
+            return false;
+        }
+    }
+
+    /**
+     * Delete user
+     *
+     * @param User $user
+     * @return boolean
+     */
+    public function delete(User $user): bool
+    {
+        DB::beginTransaction();
+        try {
+            DB::table('profile_access')
+            ->where('user_id', $user->id)
+            ->delete();
+
+            $isDeleted = DB::table('users')
+                            ->where('user_id', $user->id)
+                            ->delete();
+
+            DB::commit();
+            return $isDeleted;
+
+        } catch (\Throwable $th) {
+            Log::error($th->getMessage(), [$th]);
+        }
     }
 }

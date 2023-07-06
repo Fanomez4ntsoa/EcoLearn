@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Contracts\Security\GuardServiceInterface;
 use App\Contracts\User\UserServiceInterface;
 use App\Http\Controllers\Controller;
 use App\Resources\UserResource;
@@ -17,9 +18,10 @@ class UserController extends Controller
      * Create a new controller instance 
      */
     public function __construct(
-        protected UserServiceInterface $userService
+        protected UserServiceInterface $userService,
+        protected GuardServiceInterface $guardService,
     ) {
-        //
+        $this->middleware('auth:api', ['except' => 'update']);
     }
 
     /**
@@ -86,11 +88,45 @@ class UserController extends Controller
         }
 
         try {
-            $currentUser = Auth::user();
+            $user = Auth::user();
+            $allowed = $this->guardService->allows($user, ACCESS_CLIENT_USER); 
+            if(!$allowed) {
+                return $this->error(
+                    message:__('error.access.denied'),
+                    httpCode: 401
+                );
+            } else {
+                $updated = false;
+                $user = $this->userService->find($userId);
+
+                if($user) {
+                    $userCheck = $this->userService->findByEmail($request->email);
+                    if($userCheck && ($userCheck->id !== $user->id)) {
+                        return $this->error(
+                            message:__('error.user.not_found'),
+                            httpCode: 404
+                        );
+                    }
+
+                    $updated = $this->userService->update(
+                        user: $user,
+                        email: $request->email,
+                        name: $request->name,
+                        username: $request->username
+                    );
+                }
+
+                if($updated) {
+                    return $this->success(
+                        message:__('success.user.updated'),
+                        httpCode: 202
+                    );
+                }
+                return $this->error();
+            }
+
         } catch (\Throwable $th) {
             Log::error($th->getMessage(), [$th]);
         }
-
-            
     }
 }

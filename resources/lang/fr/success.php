@@ -4,6 +4,8 @@ return [
     'default'       => 'Succès',
     'user'  => [
         'created'       => 'Utilisateur créer avec succès.',
+        'updated' => 'Utilisateur mis à jours avec succès.',
+        'deleted'   => 'L\'utilisateur vient d\'être supprimé',
         'collection_informations'  => 'Les informations des utilisateur afficher ci-dessous',
         'informations'  => 'Les informations de l\'utilisateur afficher ci-dessous'
     ],

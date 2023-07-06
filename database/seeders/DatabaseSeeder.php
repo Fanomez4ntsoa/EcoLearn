@@ -94,6 +94,12 @@ class DatabaseSeeder extends Seeder
                     'name'          => 'Accès complet aux statistiques : Accéder à des statistiques détaillées, générer des rapports',
                     'created_at'    => $now
                 ],
+
+                [
+                    'key'           => 'ADMIN_USER',
+                    'name'          => 'Gérer les utilisateurs: Récuperer tous les utilisateurs, mettre à jour et supprimer des utilisateurs',
+                    'created_at'    => $now
+                ],
             ]);
     }
 }

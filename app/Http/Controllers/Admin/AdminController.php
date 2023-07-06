@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Exception;
 use App\Contracts\EcoLearn\AccountServiceInterface;
 use App\Contracts\Security\GuardServiceInterface;
 use App\Contracts\User\UserServiceInterface;
-use App\EcoLearn\Models\User;
 use App\Http\Controllers\Controller;
-use App\Resources\UserResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,7 +24,7 @@ class AdminController extends Controller
     }
 
     /**
-     * All Users
+     * Get all Users by admin
      *
      * @param Request $request
      * @return JsonResponse
@@ -47,7 +46,7 @@ class AdminController extends Controller
         try {
             $profile = $this->accountService->getProfile($request->profile);
             
-            if($profile != ADMINISTRATION_ADMIN || !$this->guardService->allows(Auth::user(), ACCESS_ADMIN_PROFILES_ACCESS)) {
+            if($profile != ADMINISTRATION_ADMIN || !$this->guardService->allows(Auth::user(), ACCESS_ADMIN_USER)) {
                 return $this->error(
                     message:__('error.access.denied'),
                     httpCode: 401
@@ -75,7 +74,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Get User informations 
+     * Get User informations by admin
      *
      * @return JsonResponse
      */
@@ -96,7 +95,7 @@ class AdminController extends Controller
         try {
             $profile = $this->accountService->getProfile($request->profile);
             
-            if($profile != ADMINISTRATION_ADMIN || !$this->guardService->allows(Auth::user(), ACCESS_ADMIN_PROFILES_ACCESS)) {
+            if($profile != ADMINISTRATION_ADMIN || !$this->guardService->allows(Auth::user(), ACCESS_ADMIN_USER)) {
                 return $this->error(
                     message:__('error.access.denied'),
                     httpCode: 401
@@ -120,5 +119,57 @@ class AdminController extends Controller
         } catch (\Throwable $th) {
             Log::error($th->getMessage(), [$th]);
         }
+    }
+
+    /**
+     * Delete User by admin
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function delete(Request $request, int $userId): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'profile'       => 'string'
+        ]);
+
+        if($validator->fails()) {
+            return $this->error(
+                message:__('error.validations'),
+                data: $validator->errors(),
+                httpCode: 422
+            );
+        }
+
+        try {
+            $profile = $this->accountService->getProfile($request->profile);
+            if($profile != ADMINISTRATION_ADMIN || !$this->guardService->allows(Auth::user(), ACCESS_ADMIN_USER)) {
+                return $this->error(
+                    message:__('error.access.denied'),
+                    httpCode: 401
+                );
+            }
+            $user = $this->userService->find($userId);
+
+            $delete = $this->userService->delete($user);
+            if($delete) {
+                return $this->success(
+                    message:__('success.user.deleted'),
+                    httpCode: 202
+                );
+            }
+            throw new Exception(__('error.user.delete'), 403);
+
+        } catch (\Throwable $th) {
+            Log::error($th->getMessage(), [$th]);
+            
+            return $this->error(
+                message: __('error.default'),
+                httpCode: 403
+            );
+        }
+        return $this->error(
+            message:__('error.default'), 
+        );
     }
 }

@@ -25,6 +25,7 @@ $router->group(['prefix' => 'admin', 'namespace' => 'Admin'], function($router) 
     $router->group(['prefix' => 'user'], function($router) {
         $router->get('', 'AdminController@index');
         $router->get('{userId}', 'AdminController@show');
+        $router->delete('{userId}', 'AdminController@delete');
     });
     $router->group(['prefix' => 'quizz'], function($router) {
         $router->post('create', 'QuizController@quizCategory');
@@ -49,5 +50,6 @@ $router->group(['prefix' => 'security', 'namespace' => 'Security'], function ($r
 
 $router->group(['prefix' => 'user', 'namespace' => 'User'], function($router) {
     $router->post('create', 'UserController@create');
+    $router->post('update/{userId}', 'UserController@update');
 });
 
