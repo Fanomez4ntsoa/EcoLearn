@@ -3,6 +3,7 @@
 namespace App\Contracts\User;
 
 use App\EcoLearn\Models\User;
+use Illuminate\Support\Collection;
 
 interface UserServiceInterface
 {
@@ -21,6 +22,14 @@ interface UserServiceInterface
      * @return User|null
      */
     public function findByEmail(string $email): ?User;
+
+    /**
+     * All users Client who is not Admin
+     *
+     * @param User $user
+     * @return Collection
+     */
+    public function getAllclientUser(): Collection;
 
     /**
      * Create new Client user EcoLearn

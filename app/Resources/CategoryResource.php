@@ -16,10 +16,10 @@ class CategoryResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'id'        => $request->id,
-            'name'      => $request->name ?? null,
-            'description' => $request->description ?? null,
-            'created_at'  => $request->created_at ?? null
+            'id'            => $request->id,
+            'name'          => $request->name ?? null,
+            'description'   => $request->description ?? null,
+            'created_at'    => $request->created_at ?? null
         ];
     }
 }

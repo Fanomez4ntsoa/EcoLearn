@@ -4,7 +4,11 @@ return [
     'default'       => 'Succès',
     'user'  => [
         'created'       => 'Utilisateur créer avec succès.',
+        'collection_informations'  => 'Les informations des utilisateur afficher ci-dessous',
         'informations'  => 'Les informations de l\'utilisateur afficher ci-dessous'
+    ],
+    'auth'  => [
+        'logged_out'    => 'Utilisateur Déconnecté.',
     ],
     'security'  => [
         'password'  => [

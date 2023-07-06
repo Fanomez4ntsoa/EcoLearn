@@ -9,6 +9,7 @@ use App\Events\User\UserCreatedEvent;
 use Illuminate\Support\Str;
 use App\Models\Scopes\UnexpiredScope;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -18,8 +19,9 @@ class UserService implements UserServiceInterface
     public function __construct(
         protected AccountServiceInterface $accountService
     ) {
-        
+        //
     }
+    
     /**
      * Find user by id
      *
@@ -44,6 +46,7 @@ class UserService implements UserServiceInterface
             $newUser->name          = $user->name;
             $newUser->username      = $user->username;
             $newUser->email         = $user->email;
+            $newUser->role          = $user->isAdmin;
             $newUser->created_at    = $creationDate;
             $newUser->tokenValidFrom= $tokenValidFrom;
             $newUser->tokenValidTill= $tokenValidTill;
@@ -89,6 +92,47 @@ class UserService implements UserServiceInterface
             return $newUser;
         }
         return null;
+    }
+
+    /**
+     * All users Client who is not Admin
+     *
+     * @param User $user
+     * @return Collection
+     */
+    public function getAllclientUser(): Collection
+    {
+        $users = DB::table('users')
+                ->where(function($query) {
+                    (new UnexpiredScope())->applyToBuilder($query, 'users');
+                })
+                ->whereNull('isAdmin')
+                ->get();
+
+        $userCollection = collect();
+
+        foreach ($users as $user) {
+            $creationDate = to_datetime($user->created_at);
+            $tokenValidFrom = to_datetime($user->token_valid_from);
+            $tokenValidTill = to_datetime($user->token_valid_till);
+
+            $newUser = new User();
+            $newUser->id                = $user->user_id;
+            $newUser->name              = $user->name;
+            $newUser->username          = $user->username;
+            $newUser->email             = $user->email;
+            $newUser->role              = $user->isAdmin;
+            $newUser->created_at        = $creationDate;
+            $newUser->tokenValidFrom    = $tokenValidFrom;
+            $newUser->tokenValidTill    = $tokenValidTill;
+            $newUser
+                ->setHashedPassword($user->password)
+                ->setPasswordToken($user->token);
+
+                $userCollection->push($newUser);
+            }
+
+        return $userCollection;
     }
 
     /**
@@ -157,6 +201,7 @@ class UserService implements UserServiceInterface
                                     'email'             => strtolower($email),
                                     'Valid_From'        => $now,
                                     'password'          => '',
+                                    'isAdmin'           => null,
                                     'token'             => Hash::make($token),
                                     'token_valid_from'  => $tokenValidFrom,
                                     'created_at'        => $now
@@ -215,17 +260,17 @@ class UserService implements UserServiceInterface
                                 ->get();
 
                 $userExists = $this->find($userId);
-                
                 if($accesses) {
                     if($newUser) {
                         event(new UserCreatedEvent($userExists, $token));
                     }
-
                 }
+
                 DB::commit();
                 return SUCCESS_USER_CREATED;
             }
         } catch (\Throwable $th) {
+            dd($th->getMessage());
             DB::rollBack();
             return ERROR_USER_CREATED;
         }

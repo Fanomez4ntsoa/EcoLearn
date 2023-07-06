@@ -43,6 +43,13 @@ class User implements AuthenticatableContract, AuthorizableContract, JWTSubject
     public string $email;
 
     /**
+     * User role
+     *
+     * @var boolean|null
+     */
+    public ?bool $role;
+
+    /**
      * User creationDate
      *
      * @var DateTimeInterface

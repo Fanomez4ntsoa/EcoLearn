@@ -22,6 +22,10 @@ $router->group(['prefix' => 'auth'], function($router) {
 });
 
 $router->group(['prefix' => 'admin', 'namespace' => 'Admin'], function($router) {
+    $router->group(['prefix' => 'user'], function($router) {
+        $router->get('', 'AdminController@index');
+        $router->get('{userId}', 'AdminController@show');
+    });
     $router->group(['prefix' => 'quizz'], function($router) {
         $router->post('create', 'QuizController@quizCategory');
         $router->post('question', 'QuizController@quizQuestion');

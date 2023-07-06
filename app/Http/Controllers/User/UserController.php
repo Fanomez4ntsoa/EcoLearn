@@ -47,7 +47,7 @@ class UserController extends Controller
             }
 
             $status = $this->userService->create($request->email, $request->name, $request->username, $request->profile);
-
+            
             if($status === SUCCESS_USER_CREATED) {
                 return $this->success(
                     message:__('success.user.created'),
@@ -62,36 +62,6 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Show User Information
-     *
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function show(int $userId): JsonResponse
-    {
-        try {
-            Auth::user();
-            $user = $this->userService->find($userId);
-
-            if($user) {
-                return $this->success(
-                    message:__('success.user.informations'),
-                    data: new UserResource($user),
-                    httpCode: 200
-                );
-                
-            }
-
-            return $this->error(
-                message:__('error.user.not_found'),
-                httpCode: 404
-            );
-
-        } catch (\Throwable $th) {
-            Log::error($th->getMessage(), $th->getTrace());
-        }
-    }
 
     /**
      * Update an User
