@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Scopes\UnexpiredScope;
 use Illuminate\Database\Eloquent\Model;
 
 class Quiz extends Model
@@ -55,5 +54,25 @@ class Quiz extends Model
         static::creating(function ($model) {
             $model->created_at = $model->freshTimestamp();
         });
+    }
+
+    /**
+     * Every quiz have just one category 
+     *
+     * @return void
+     */
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * One quiz can have many question
+     *
+     * @return void
+     */
+    public function questions()
+    {
+        return $this->hasMany(QuizQuestion::class);
     }
 }

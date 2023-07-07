@@ -132,31 +132,6 @@ class UserService implements UserServiceInterface
                     });
 
         return $query->paginate($perPage);
-
-        // $userCollection = collect();
-
-        // foreach ($users as $user) {
-        //     $creationDate = to_datetime($user->created_at);
-        //     $tokenValidFrom = to_datetime($user->token_valid_from);
-        //     $tokenValidTill = to_datetime($user->token_valid_till);
-
-        //     $newUser = new User();
-        //     $newUser->id                = $user->user_id;
-        //     $newUser->name              = $user->name;
-        //     $newUser->username          = $user->username;
-        //     $newUser->email             = $user->email;
-        //     $newUser->role              = $user->isAdmin;
-        //     $newUser->created_at        = $creationDate;
-        //     $newUser->tokenValidFrom    = $tokenValidFrom;
-        //     $newUser->tokenValidTill    = $tokenValidTill;
-        //     $newUser
-        //         ->setHashedPassword($user->password)
-        //         ->setPasswordToken($user->token);
-
-        //         $userCollection->push($newUser);
-        //     }
-
-        // return $userCollection;
     }
 
     /**

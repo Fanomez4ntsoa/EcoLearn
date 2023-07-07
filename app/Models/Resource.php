@@ -2,11 +2,10 @@
 
 namespace App\Models;
 
-use App\Models\Scopes\UnexpiredScope;
+use App\Models\Category;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Notifications\Notifiable;
 
-class Ressources extends Model
+class Resource extends Model
 {
     /**
      * The table associated with the model
@@ -60,9 +59,10 @@ class Ressources extends Model
             $model->created_at = $model->freshTimestamp();
         });
     }
-
-    protected static function booted()
+    
+    public function category()
     {
-        static::addGlobalScope(new UnexpiredScope());
+        return $this->belongsTo(Category::class);
     }
+
 }

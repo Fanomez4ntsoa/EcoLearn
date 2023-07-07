@@ -17,7 +17,7 @@ class QuizService implements QuizServiceInterface
      * Find quiz by id
      *
      * @param integer $id
-     * @return Quiz
+     * @return Quiz|null
      */
     public function find(int $id): ?Quiz
     {

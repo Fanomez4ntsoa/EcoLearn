@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Scopes\UnexpiredScope;
+use App\Models\Resource;
 use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
@@ -41,12 +41,11 @@ class Category extends Model
 
     /**
      * The attributes that should be cast
-     * 
+     *
      * @var array
      */
     protected $casts = [
-        'isAdmin'           => 'boolean',
-        'created_at'        => 'datetime',
+        'created_at'    => 'datetime'
     ];
 
     protected static function boot()
@@ -58,8 +57,23 @@ class Category extends Model
         });
     }
 
-    protected static function booted()
+    /**
+     * Category can have many resource 
+     *
+     * @return void
+     */
+    public function resources()
     {
-        static::addGlobalScope(new UnexpiredScope());
+        return $this->hasMany(Resource::class);
+    }
+
+    /**
+     * Category can have just one Quiz
+     *
+     * @return void
+     */
+    public function quiz()
+    {
+        return $this->hasOne(Quiz::class);
     }
 }

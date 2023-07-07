@@ -4,21 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class QuizQuestion extends Model
+class QuizAnswer extends Model
 {
     /**
      * Table name
      *
      * @var string
      */
-    protected $table = 'quizQuestions';
+    protected $table = 'quizAnswers';
 
     /**
      * Primary key column
      *
      * @var string
      */
-    protected $primaryKey = 'question_id';
+    protected $primaryKey = 'answer_id';
 
     /**
      * Disable Eloquent Timestamp
@@ -33,17 +33,14 @@ class QuizQuestion extends Model
      * @var array
      */
     protected $fillable = [
+        'user_id',
         'quiz_id',
         'question_text',
+        'chosen_option'
     ];
 
-    public function quiz()
+    public function question()
     {
-        return $this->belongsTo(Quiz::class);
-    }
-    
-    public function answers()
-    {
-        return $this->hasOne(QuizAnswer::class);
+        return $this->belongsTo(QuizQuestion::class);
     }
 }

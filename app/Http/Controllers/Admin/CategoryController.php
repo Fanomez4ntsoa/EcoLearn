@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use App\Resources\CategoryResource;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Validator;
 use App\Contracts\EcoLearn\AccountServiceInterface;
 use App\Contracts\EcoLearn\CategoryServiceInterface;
 use App\Contracts\Security\GuardServiceInterface;
-use App\Http\Controllers\Controller;
-use App\Resources\CategoryResource;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
+use Exception;
 
 class CategoryController extends Controller
 {
@@ -23,6 +24,7 @@ class CategoryController extends Controller
         protected AccountServiceInterface $accountService,
         protected GuardServiceInterface $guardService
     ) {
+        $this->middleware('auth:api');
     }
 
     /**
@@ -59,13 +61,14 @@ class CategoryController extends Controller
 
             $status = $this->categoryService->create($request->name, $request->description);
 
-            if ($status === 0) {
+            if ($status === SUCCESS_CATEGORY_CREATED) {
                 return $this->success(
-                    message: __('Category créé avec success'),
+                    message: __('succes.category.created'),
                     httpCode: 200,
                 );
             }
-            return $this->error();
+            throw new Exception(__('error.category.creation'), 403);
+
         } catch (\Throwable $th) {
             Log::error($th->getMessage(), $th->getTrace());
             return $this->error();
@@ -73,67 +76,115 @@ class CategoryController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Update category
      *
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @param integer $categoryId
+     * @return JsonResponse
      */
-    public function findByID($category_id): JsonResponse
+    public function update(Request $request, int $categoryId): JsonResponse
     {
-        try {
-            Auth::user();
-            $category = $this->categoryService->findByID($category_id);
-            $to_json = new CategoryResource($category);
+        $validator = Validator::make($request->all(), [
+            'profile'       => 'string',
+            'name'          => 'required|string|min:2|max:64',
+            'description'   => 'required|string'
+        ]);
 
-            if ($category) {
-                return $this->success(
-                    message: __('success.user.informations'),
-                    data: $to_json->toArray($category),
-                    httpCode: 200
+        if($validator->fails()) {
+            return $this->error(
+                message:__('error.validations'),
+                data: $validator->errors(),
+                httpCode: 422
+            );
+        }
+
+        try {
+            $user = Auth::user();
+            $profile = $this->accountService->getProfile($request->profile);
+            
+            if($profile != ADMINISTRATION_ADMIN || !$this->guardService->allows($user, ACCESS_ADMIN_CATEGORIES)) {
+                return $this->error(
+                    message:__('error.access.denied'),
+                    httpCode: 401
+                );
+            }
+            $updated = false;
+            $category = $this->categoryService->find($categoryId);
+
+            if($category) {
+                $updated = $this->categoryService->update(
+                    category: $category,
+                    name: $request->name,
+                    description: $request->description
                 );
             }
 
-            return $this->error(
-                message: __('error.user.not_found'),
-                httpCode: 404
-            );
+            if($updated) {
+                return $this->success(
+                    message:__('success.category.updated'),
+                    httpCode: 202
+                );
+            }
+            throw new Exception(__('error.category.update'), 403);
+
         } catch (\Throwable $th) {
-            Log::error($th->getMessage(), $th->getTrace());
+            Log::error($th->getMessage(), [$th]);
+            return $this->error();
         }
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Delete a category
      *
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @param integer $categoryId
+     * @return JsonResponse
      */
-    // public function edit(Category $category)
-    // {
-    //     //
-    // }
+    public function delete(Request $request, int $categoryId): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'profile'       => 'string'
+        ]);
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
-     */
-    // public function update(Request $request, Category $category)
-    // {
-    //     //
-    // }
+        if($validator->fails()) {
+            return $this->error(
+                message:__('error.validations'),
+                data: $validator->errors(),
+                httpCode: 422
+            );
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
-     */
-    // public function destroy(Category $category)
-    // {
-    //     //
-    // }
+        try {
+            $profile = $this->accountService->getProfile($request->profile);
+            if($profile != ADMINISTRATION_ADMIN || !$this->guardService->allows(Auth::user(), ACCESS_ADMIN_CATEGORIES)) {
+                return $this->error(
+                    message:__('error.access.denied'),
+                    httpCode: 401
+                );
+            }
+
+            $category = $this->categoryService->find($categoryId);
+
+            $delete = $this->categoryService->delete($category);
+            if($delete) {
+                return $this->success(
+                    message:__('success.category.deleted'),
+                    httpCode: 202
+                );
+            }
+            throw new Exception(__('error.category.delete'), 403);
+            
+        } catch (\Throwable $th) {
+            Log::error($th->getMessage(), [$th]);
+            
+            return $this->error(
+                message: __('error.default'),
+                httpCode: 403
+            );
+        }
+        return $this->error(
+            message:__('error.default'), 
+        );
+    }
 
 }

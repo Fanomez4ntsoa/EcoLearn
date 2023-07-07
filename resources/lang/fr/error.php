@@ -22,6 +22,11 @@ return [
         'create'    => 'Erreur s\'est produite lors de la création d\'un quizz',
         'question'  => 'Erreur lors de la création d\'un Question'
     ],
+    'category'  => [
+        'creation'   => 'Erreur s\'est produite lors de la création d\'un nouveau categorie.',
+        'update'    => 'Erreur s\'est produite lors de la mise à jour du categorie.',
+        'delete'    => 'La suppression de la catégorie a échouer',
+    ],
     'access'    => [
         'denied'    => 'Vous n\'avez pas l\'autorisation à faire cette demande. ',
         // 'forbidden' => 'Vous n\'avez pas le droit à faire cette demande. ',
