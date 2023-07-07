@@ -3,7 +3,7 @@
 namespace App\Contracts\User;
 
 use App\EcoLearn\Models\User;
-use Illuminate\Support\Collection;
+use Illuminate\Contracts\Pagination\Paginator;
 
 interface UserServiceInterface
 {
@@ -24,15 +24,17 @@ interface UserServiceInterface
     public function findByEmail(string $email): ?User;
 
     /**
-     * All users Client who is not Admin
+     * User client index
      *
-     * @param User $user
-     * @return Collection
+     * @param integer|null $field
+     * @param integer|null $search
+     * @param integer|null $perPage
+     * @return Paginator
      */
-    public function getAllclientUser(): Collection;
+    public function index(string $field = null, string $search = null, int $perPage = null ): Paginator;
 
     /**
-     * Create new Client user EcoLearn
+     * Create new Client user 
      *
      * @param string $email
      * @param string $name

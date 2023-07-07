@@ -7,6 +7,8 @@ use App\Contracts\EcoLearn\AccountServiceInterface;
 use App\Contracts\Security\GuardServiceInterface;
 use App\Contracts\User\UserServiceInterface;
 use App\Http\Controllers\Controller;
+use App\Resources\UserResource;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,15 +26,18 @@ class AdminController extends Controller
     }
 
     /**
-     * Get all Users by admin
+     * Users list
      *
      * @param Request $request
      * @return JsonResponse
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): UserResource|JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'profile'       => 'string'
+            'profile'       => 'string',
+            'field'         => 'nullable|string:|in:*,id,name,username,email',
+            'search'        => 'nullable|string',
+            'per_page'      => 'nullable|integer'
         ]);
 
         if($validator->fails()) {
@@ -52,8 +57,12 @@ class AdminController extends Controller
                     httpCode: 401
                 );
             }
-
-            $userCollection = $this->userService->getAllclientUser();
+            
+            $userCollection = $this->userService->index(
+                field: $request->field,
+                search: $request->search,
+                perPage: $request->per_page
+            );
 
             if($userCollection->isEmpty()) {
                 return $this->error(
@@ -64,7 +73,17 @@ class AdminController extends Controller
 
             return $this->success(
                 message: __('success.user.collection_informations'),
-                data: $userCollection,
+                data: [
+                    'users' => UserResource::collection($userCollection), 
+                    'pagination' => [
+                        'from'          => $userCollection->firstItem(),
+                        'to'            => $userCollection->lastItem(),
+                        'next_page_url' => $userCollection->nextPageUrl(),
+                        'path'          => $userCollection->path(),
+                        'per_page'      => $userCollection->perPage(),
+                        'prev_page_url' => $userCollection->previousPageUrl(),
+                    ],
+                ],
                 httpCode: 200
             );
 
@@ -78,7 +97,7 @@ class AdminController extends Controller
      *
      * @return JsonResponse
      */
-    public function show(Request $request, int $userId): JsonResponse
+    public function show(Request $request, int $userId): UserResource|JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'profile'       => 'string'

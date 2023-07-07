@@ -8,8 +8,8 @@ use App\EcoLearn\Models\User;
 use App\Events\User\UserCreatedEvent;
 use Illuminate\Support\Str;
 use App\Models\Scopes\UnexpiredScope;
+use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -95,44 +95,68 @@ class UserService implements UserServiceInterface
     }
 
     /**
-     * All users Client who is not Admin
+     * User index
      *
-     * @param User $user
-     * @return Collection
+     * @param integer|null $field
+     * @param integer|null $search
+     * @param integer|null $perPage
+     * @return Paginator
      */
-    public function getAllclientUser(): Collection
+    public function index(string $field = null, string $search = null, int $perPage = null ): Paginator
     {
-        $users = DB::table('users')
-                ->where(function($query) {
-                    (new UnexpiredScope())->applyToBuilder($query, 'users');
-                })
-                ->whereNull('isAdmin')
-                ->get();
+        $query = DB::table('users')
+                    ->whereNull('isAdmin')
+                    ->where(function($query) {
+                        (new UnexpiredScope())->applyToBuilder($query, 'users');
+                    })
+                    ->where(function($query) use ($field, $search) {
+                        $maps = [
+                            'id'        => 'user_id',
+                            'name'      => 'name',
+                            'username'  => 'username',
+                            'email'     => 'email',
+                        ];
 
-        $userCollection = collect();
+                        if($search) {
+                            if(is_null($field) || $field === '') {
+                                $compare = '%' . Str::replaceArray(' ', ['%', ''], $search) . '%';
+                                $query
+                                    ->where('name', 'like', $compare)
+                                    ->orWhere('username', 'like', $compare)
+                                    ->orWhere('email', 'like', $compare);
+                            } else if(isset($maps[$field])) {
+                                $query->where($maps[$field], 'like', '%' . Str::replace(' ', '%', $search) . '%');
+                            }
+                        }
 
-        foreach ($users as $user) {
-            $creationDate = to_datetime($user->created_at);
-            $tokenValidFrom = to_datetime($user->token_valid_from);
-            $tokenValidTill = to_datetime($user->token_valid_till);
+                    });
 
-            $newUser = new User();
-            $newUser->id                = $user->user_id;
-            $newUser->name              = $user->name;
-            $newUser->username          = $user->username;
-            $newUser->email             = $user->email;
-            $newUser->role              = $user->isAdmin;
-            $newUser->created_at        = $creationDate;
-            $newUser->tokenValidFrom    = $tokenValidFrom;
-            $newUser->tokenValidTill    = $tokenValidTill;
-            $newUser
-                ->setHashedPassword($user->password)
-                ->setPasswordToken($user->token);
+        return $query->paginate($perPage);
 
-                $userCollection->push($newUser);
-            }
+        // $userCollection = collect();
 
-        return $userCollection;
+        // foreach ($users as $user) {
+        //     $creationDate = to_datetime($user->created_at);
+        //     $tokenValidFrom = to_datetime($user->token_valid_from);
+        //     $tokenValidTill = to_datetime($user->token_valid_till);
+
+        //     $newUser = new User();
+        //     $newUser->id                = $user->user_id;
+        //     $newUser->name              = $user->name;
+        //     $newUser->username          = $user->username;
+        //     $newUser->email             = $user->email;
+        //     $newUser->role              = $user->isAdmin;
+        //     $newUser->created_at        = $creationDate;
+        //     $newUser->tokenValidFrom    = $tokenValidFrom;
+        //     $newUser->tokenValidTill    = $tokenValidTill;
+        //     $newUser
+        //         ->setHashedPassword($user->password)
+        //         ->setPasswordToken($user->token);
+
+        //         $userCollection->push($newUser);
+        //     }
+
+        // return $userCollection;
     }
 
     /**
@@ -317,8 +341,8 @@ class UserService implements UserServiceInterface
         DB::beginTransaction();
         try {
             DB::table('profile_access')
-            ->where('user_id', $user->id)
-            ->delete();
+                ->where('user_id', $user->id)
+                ->delete();
 
             $isDeleted = DB::table('users')
                             ->where('user_id', $user->id)

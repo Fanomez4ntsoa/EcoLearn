@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Contracts\Security\GuardServiceInterface;
-use App\Contracts\User\UserServiceInterface;
-use App\Http\Controllers\Controller;
-use App\Resources\UserResource;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use App\Contracts\User\UserServiceInterface;
+use App\Contracts\Security\GuardServiceInterface;
 
 class UserController extends Controller
 {
@@ -21,7 +20,7 @@ class UserController extends Controller
         protected UserServiceInterface $userService,
         protected GuardServiceInterface $guardService,
     ) {
-        $this->middleware('auth:api', ['except' => 'update']);
+        $this->middleware('auth:api', ['only' => 'update']);
     }
 
     /**
