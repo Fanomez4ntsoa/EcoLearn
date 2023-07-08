@@ -1,138 +1,365 @@
 <?php
 
-namespace App\Contracts\Admin;
+namespace App\Http\Controllers\Admin;
 
-use App\Contracts\EcoLearn\AccountServiceInterface;
-use App\Contracts\EcoLearn\ResourceServiceInterface;
-use App\Http\Controllers\Controller;
-use App\Resources\ResourceResource;
-use Illuminate\Http\JsonResponse;
+use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\JsonResponse;
+use App\Resources\ResourceResource;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
+use App\Contracts\EcoLearn\AccountServiceInterface;
+use App\Contracts\EcoLearn\CategoryServiceInterface;
+use App\Contracts\EcoLearn\ResourceServiceInterface;
+use App\Contracts\Security\GuardServiceInterface;
 
 class ResourceController extends Controller
 {
-    /**
-     * Create a new Controller instance
-     */
     public function __construct(
-        protected ResourceServiceInterface $ressourceService,
-        protected AccountServiceInterface $accountService
+        protected ResourceServiceInterface $resourceService,
+        protected AccountServiceInterface $accountService,
+        protected GuardServiceInterface $guardService,
+        protected CategoryServiceInterface $categoryService,
     ) {
         $this->middleware('auth:api');
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Resources list with filtre
      *
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @return ResourceResource|JsonResponse
+     */
+    public function index(Request $request): ResourceResource|JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'profile'       => 'string',
+            'category'      => 'required|integer',
+            'field'         => 'nullable|string:|in:*,id,title,description',
+            'search'        => 'nullable|string',
+            'per_page'      => 'nullable|integer'
+        ]);
+
+        if($validator->fails()) {
+            return $this->error(
+                message:__('error.validations'),
+                data: $validator->errors(),
+                httpCode: 422
+            );
+        }
+
+        try {
+            $profile = $this->accountService->getProfile($request->profile);
+            
+            if($profile != ADMINISTRATION_ADMIN || !$this->guardService->allows(Auth::user(), ACCESS_ADMIN_CATEGORIES)) {
+                return $this->error(
+                    message:__('error.access.denied'),
+                    httpCode: 401
+                );
+            }
+            $category = $this->categoryService->find($request->category);
+            
+            $resourceCollection = $this->resourceService->index(
+                category: $category,
+                field: $request->field,
+                search: $request->search,
+                perPage: $request->per_page
+            );
+
+            
+            if($resourceCollection->isEmpty()) {
+                return $this->error(
+                    message: __('error.resource.collection'),
+                    httpCode: 404
+                );
+            }
+            
+            return $this->success(
+                message: __('success.user.collection_informations'),
+                data: [
+                    'users' => ResourceResource::collection($resourceCollection), 
+                    'pagination' => [
+                        'from'          => $resourceCollection->firstItem(),
+                        'to'            => $resourceCollection->lastItem(),
+                        'next_page_url' => $resourceCollection->nextPageUrl(),
+                        'path'          => $resourceCollection->path(),
+                        'per_page'      => $resourceCollection->perPage(),
+                        'prev_page_url' => $resourceCollection->previousPageUrl(),
+                    ],
+                ],
+                httpCode: 200
+            );
+
+        } catch (\Throwable $th) {
+            Log::error($th->getMessage(), $th->getTrace());
+        }
+    }
+
+    /**
+     * Add new resource from category by Admin
+     * 
+     * @param Request $request
+     * @return JsonResponse
      */
     public function create(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'profile'                 => 'string',
-            'category_id'             => 'int',
-            'title'                   => 'required|string|min:2|max:64',
-            'description'            => 'required|string',
+            'profile'               => 'string',
+            'category'              => 'required|integer',
+            'title'                 => 'required|string|min:2|max:100',
+            'description'           => 'required|string',
             'url'                   => 'nullable|string'
         ]);
 
-        $user = Auth::user();
-        $profile = $this->accountService->getProfile($request->profile);
-
-        if ($profile != ADMINISTRATION_ADMIN) {
+        if($validator->fails()) {
             return $this->error(
-                message: __('error.category.acces'),
-                httpCode: 500,
+                message: __('error.validations'),
+                data: $validator->errors(),
+                httpCode: 422
             );
         }
+
         try {
-            if ($validator->fails()) {
+            $user = Auth::user();
+            $profile = $this->accountService->getProfile($request->profile);
+
+            if($profile != ADMINISTRATION_ADMIN || !$this->guardService->allows($user, ACCESS_ADMIN_CATEGORIES)) {
                 return $this->error(
-                    message: __('error.validations'),
-                    data: $validator->errors(),
-                    httpCode: 422
+                    message:__('error.access.denied'),
+                    httpCode: 401
                 );
             }
 
-            $status = $this->ressourceService->create($request->category_id, $request->title, $request->description, $request->url);
-
-            if ($status === 1) {
-                return $this->success(
-                    message: __('ressource créé avec success'),
-                    httpCode: 200,
+            $category = $this->categoryService->find($request->category);
+            if(!$category) {
+                return $this->error(
+                    message:__('error.resource.category.not_found'),
+                    httpCode: 404
                 );
             }
-            return $this->error();
+
+            $status = $this->resourceService->create($user, $category, $request->title, $request->description, $request->url);
+
+            if($status != SUCCESS_RESOURCE_CREATED) {
+                if($status == ERROR_CATEGORY_NOT_FOUND) {
+                    return $this->error(
+                        message:__('error.resource.category.not_found'),
+                        httpCode: 404
+                    );    
+                } else {
+                    return $this->error(
+                        message:__('error.resource.create'),
+                        httpCode: 404
+                    );
+                }
+            }
+    
+            return $this->success(
+                message:__('success.resource.created'),
+                httpCode: 201
+            );
+
         } catch (\Throwable $th) {
             Log::error($th->getMessage(), $th->getTrace());
             return $this->error();
         }
     }
 
-
     /**
-     * Display the specified resource.
+     * Get informations of resources
      *
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @param integer $resourceId
+     * @return JsonResponse
      */
-    public function findByID($ressource_id): JsonResponse
+    public function show(Request $request, int $resourceId): ResourceResource|JsonResponse
     {
-        try {
-            $ressource = $this->ressourceService->findByID($ressource_id);
-            $to_json = new ResourceResource($ressource);
+        $validator = Validator::make($request->all(), [
+            'profile'       => 'string'
+        ]);
 
-            if ($ressource) {
+        if($validator->fails()) {
+            return $this->error(
+                message:__('error.validations'),
+                data: $validator->errors(),
+                httpCode: 422
+            );
+        }
+
+        try {
+            $profile = $this->accountService->getProfile($request->profile);
+            
+            if($profile != ADMINISTRATION_ADMIN || !$this->guardService->allows(Auth::user(), ACCESS_ADMIN_USER)) {
+                return $this->error(
+                    message:__('error.access.denied'),
+                    httpCode: 401
+                );
+            }
+
+            $resource = $this->resourceService->find($resourceId);
+            $category = $this->categoryService->find($resource->category_id);
+
+            if($resource) {
                 return $this->success(
-                    message: __('success.user.informations'),
-                    data: $to_json->toArray($ressource),
+                    message:__('error.user_informations'),
+                    data: [
+                        'resources' => [
+                            'id'            => $resource->id,
+                            'category'      => $category->name,
+                            'title'         => $resource->title,
+                            'description'   => $resource->description,
+                            'creation Date' => $resource->creationDate->format(__('date.format.date.short'))
+                        ],
+                    ],
                     httpCode: 200
                 );
             }
-
             return $this->error(
-                message: __('error.user.not_found'),
+                message:__('error.user.not_found'),
                 httpCode: 404
             );
+
         } catch (\Throwable $th) {
-            Log::error($th->getMessage(), $th->getTrace());
+            Log::error($th->getMessage(), [$th]);
         }
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Update Resource
      *
-     * @param  \App\Models\Ressources  $ressource
-     * @return \Illuminate\Http\Response
+     * @param Request $request
+     * @param integer $resourceId
+     * @return JsonResponse
      */
-    // public function edit(Ressources $ressource)
-    // {
-    //     //
-    // }
+    public function update(Request $request, int $resourceId): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'profile'               => 'string',
+            'category'              => 'required|integer',
+            'title'                 => 'nullable|string|min:2|max:100',
+            'description'           => 'nullable|string',
+            'url'                   => 'nullable|string'
+        ]);
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Ressources  $ressources
-     * @return \Illuminate\Http\Response
-     */
-    // public function update(Request $request, Ressources $ressources)
-    // {
-    //     //
-    // }
+        if($validator->fails()) {
+            return $this->error(
+                message: __('error.validations'),
+                data: $validator->errors(),
+                httpCode: 422
+            );
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Ressources  $ressource
-     * @return \Illuminate\Http\Response
-     */
-    // public function destroy(Ressources $ressource)
-    // {
-    //     //
-    // }
+        try {
+            $user = Auth::user();
+            $profile = $this->accountService->getProfile($request->profile);
+
+            if($profile != ADMINISTRATION_ADMIN || !$this->guardService->allows($user, ACCESS_ADMIN_CATEGORIES)) {
+                return $this->error(
+                    message:__('error.access.denied'),
+                    httpCode: 401
+                );
+            }
+
+            $updated = false;
+            $category = $this->categoryService->find($request->category);
+            $resource = $this->resourceService->find($resourceId);
+
+            if(!$category) {
+                return $this->error(
+                    message:__('error.resource.category.not_found'),
+                    httpCode: 404
+                );
+            }
+
+            if(!$resource) {
+                return $this->error(
+                    message:__('error.resource.not_found'),
+                    httpCode: 404
+                );
+            } else {
+                $updated = $this->resourceService->update(
+                    resource: $resource,
+                    category: $category,
+                    title: $request->title,
+                    description: $request->description,
+                    url: $request->url 
+                );
+            }
+
+            if($updated) {
+                return $this->success(
+                    message:__('success.resource.updated'),
+                    httpCode: 200
+                );
+            }
+            
+        } catch (\Throwable $th) {
+            Log::error($th->getMessage(), $th->getTrace());
+            return $this->error();
+        }
+    }
+
+   /**
+    * Delete a resource
+    *
+    * @param Request $request
+    * @param integer $resourceId
+    * @return JsonResponse
+    */
+    public function delete(Request $request, int $resourceId): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'profile'       => 'string'
+        ]);
+
+        if($validator->fails()) {
+            return $this->error(
+                message:__('error.validations'),
+                data: $validator->errors(),
+                httpCode: 422
+            );
+        }
+
+        try {
+            $user = Auth::user();
+            $profile = $this->accountService->getProfile($request->profile);
+
+            if($profile != ADMINISTRATION_ADMIN || !$this->guardService->allows($user, ACCESS_ADMIN_CATEGORIES)) {
+                return $this->error(
+                    message:__('error.access.denied'),
+                    httpCode: 401
+                );
+            }
+
+            $resource = $this->resourceService->find($resourceId);
+            if(!$resource) {
+                return $this->error(
+                    message:__('error.resource.already_deleted'),
+                    httpCode: 404
+                );
+            }
+            $delete = $this->resourceService->delete($resource);
+
+            if($delete) {
+                return $this->success(
+                    message:__('success.resource.deleted'),
+                    httpCode: 202
+                );
+            }
+            throw new Exception(__('error.resource.delete'), 403);
+            
+        } catch (\Throwable $th) {
+            Log::error($th->getMessage(), [$th]);
+            
+            return $this->error(
+                message: __('error.default'),
+                httpCode: 403
+            );
+        }
+        return $this->error(
+            message:__('error.default'), 
+        );
+    }
 }

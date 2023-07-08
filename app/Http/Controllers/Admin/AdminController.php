@@ -26,7 +26,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Users list
+     * Users list with filter
      *
      * @param Request $request
      * @return JsonResponse
@@ -97,7 +97,7 @@ class AdminController extends Controller
      *
      * @return JsonResponse
      */
-    public function show(Request $request, int $userId): UserResource|JsonResponse
+    public function show(Request $request, int $userId): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'profile'       => 'string'

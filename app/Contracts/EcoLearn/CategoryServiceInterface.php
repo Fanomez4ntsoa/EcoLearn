@@ -3,8 +3,6 @@
 namespace App\Contracts\EcoLearn;
 
 use App\EcoLearn\Models\Category;
-use App\EcoLearn\Models\User;
-use App\Models\Category as ModelsCategory;
 
 interface CategoryServiceInterface
 {

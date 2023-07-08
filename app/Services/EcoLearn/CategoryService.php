@@ -23,9 +23,6 @@ class CategoryService implements CategoryServiceInterface
     {
         $category = DB::table('categories')
                         ->where('category_id', $id)
-                        ->where(function($query) {
-                            (new UnexpiredScope())->applyToBuilder($query, 'quizzes');
-                        })
                         ->first();
 
         if ($category) {
@@ -34,8 +31,9 @@ class CategoryService implements CategoryServiceInterface
             $newCategory = new Category();
             $newCategory->id                = $category->category_id;
             $newCategory->name              = $category->name;
-            $newCategory->description       = $category->decription;
+            $newCategory->description       = $category->description;
             $newCategory->creationDate      = $creationDate;
+            $newCategory->updatedDate       = $creationDate;
 
             return $newCategory;
         }
@@ -84,14 +82,14 @@ class CategoryService implements CategoryServiceInterface
     {
         DB::beginTransaction();
         $now = Carbon::now();
-
+       
         try {
             DB::table('categories')
                 ->where('category_id', $category->id)
                 ->update([
                     'name'          => $name,
                     'description'   => $description,
-                    'created_at'    => $now
+                    'updated_at'    => $now
                 ]);
 
             DB::commit();
@@ -118,7 +116,7 @@ class CategoryService implements CategoryServiceInterface
             // Vérifier si la catégorie est liée à des ressources
             $resources = DB::table('ressources')
                             ->where('category_id', $category->id)
-                            ->exist();
+                            ->exists();
 
             if($resources) {
                 DB::table('ressources')
@@ -130,7 +128,7 @@ class CategoryService implements CategoryServiceInterface
             $quizzes = DB::table('quizzes')
                         ->where('category_id', $category->id)
                         ->get();
-
+            
             if($quizzes) {
                 foreach($quizzes as $quiz) {
                     // Supprimer les quizQuestions liées au quiz
@@ -148,13 +146,17 @@ class CategoryService implements CategoryServiceInterface
                 DB::table('quizzes')
                     ->where('category_id', $category->id)
                     ->delete();
-            }
 
+                DB::table('userProgress')
+                    ->where('category_id')
+                    ->delete();
+            }
+            
             // Supprimer la catégorie
             $category = DB::table('categories')
-                            ->where('category_id', $category)
+                            ->where('category_id', $category->id)
                             ->delete();
-
+            
             if($category) {
                 DB::commit();
                 return true;

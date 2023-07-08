@@ -26,8 +26,8 @@ interface UserServiceInterface
     /**
      * User client index
      *
-     * @param integer|null $field
-     * @param integer|null $search
+     * @param string|null $field
+     * @param string|null $search
      * @param integer|null $perPage
      * @return Paginator
      */

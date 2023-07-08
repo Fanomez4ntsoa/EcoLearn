@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use App\Resources\CategoryResource;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Validator;
 use App\Contracts\EcoLearn\AccountServiceInterface;
 use App\Contracts\EcoLearn\CategoryServiceInterface;
 use App\Contracts\Security\GuardServiceInterface;
-use Exception;
 
 class CategoryController extends Controller
 {
@@ -28,9 +27,9 @@ class CategoryController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Create new category.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function create(Request $request): JsonResponse
     {
@@ -63,7 +62,7 @@ class CategoryController extends Controller
 
             if ($status === SUCCESS_CATEGORY_CREATED) {
                 return $this->success(
-                    message: __('succes.category.created'),
+                    message: __('success.category.created'),
                     httpCode: 200,
                 );
             }
@@ -86,8 +85,8 @@ class CategoryController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'profile'       => 'string',
-            'name'          => 'required|string|min:2|max:64',
-            'description'   => 'required|string'
+            'name'          => 'nullable|string|min:2|max:64',
+            'description'   => 'nullable|string'
         ]);
 
         if($validator->fails()) {
@@ -122,7 +121,7 @@ class CategoryController extends Controller
             if($updated) {
                 return $this->success(
                     message:__('success.category.updated'),
-                    httpCode: 202
+                    httpCode: 200
                 );
             }
             throw new Exception(__('error.category.update'), 403);

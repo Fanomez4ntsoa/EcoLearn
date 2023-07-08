@@ -54,14 +54,15 @@ class QuizController extends Controller
                 );
             }
 
-            $quizzes = $this->quizService->create($user, $request->category);
-            if($quizzes != SUCCESS_QUIZZ_CREATED) {
-                if($quizzes == ERROR_CATEGORY_NOT_FOUND) {
+            $status = $this->quizService->create($user, $request->category);
+            
+            if($status != SUCCESS_QUIZZ_CREATED) {
+                if($status == ERROR_CATEGORY_NOT_FOUND) {
                     return $this->error(
                         message:__('error.quizz.category.not_found'),
                         httpCode: 404
                     );    
-                } else if ($quizzes == ERROR_QUIZ_EXISTS_FOR_CATEGORY) {
+                } else if ($status == ERROR_QUIZ_EXISTS_FOR_CATEGORY) {
                     return $this->error(
                         message:__('error.quizz.category.exists'),
                         httpCode: 403
@@ -75,8 +76,8 @@ class QuizController extends Controller
             }
     
             return $this->success(
-                message:__('success.quizz.create'),
-                data: $quizzes,
+                message:__('success.quizz.created'),
+                data: $status,
                 httpCode: 201
             );
 

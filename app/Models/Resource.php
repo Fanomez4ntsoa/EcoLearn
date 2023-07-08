@@ -34,11 +34,13 @@ class Resource extends Model
      * @var string[]
      */
     protected $fillable = [
+        'category_id',
         'title',
         'category_id',
         'description',
         'url',
-        'created_at'
+        'created_at',
+        'updated_at'
     ];
 
     /**
@@ -47,8 +49,8 @@ class Resource extends Model
      * @var array
      */
     protected $casts = [
-        'isAdmin'           => 'boolean',
         'created_at'        => 'datetime',
+        'updated_at'        => 'datetime'
     ];
 
     protected static function boot()
@@ -57,6 +59,7 @@ class Resource extends Model
 
         static::creating(function ($model) {
             $model->created_at = $model->freshTimestamp();
+            $model->updated_at = $model->freshTimestamp();
         });
     }
     

@@ -27,18 +27,21 @@ $router->group(['prefix' => 'admin', 'namespace' => 'Admin'], function($router) 
         $router->get('{userId}', 'AdminController@show');
         $router->delete('delete/{userId}', 'AdminController@delete');
     });
-    $router->group(['prefix' => 'quizz'], function($router) {
-        $router->post('create', 'QuizController@quizCategory');
-        $router->post('question', 'QuizController@quizQuestion');
-    });
     $router->group(['prefix' => 'category'], function($router) {
         $router->post('create', 'CategoryController@create');
         $router->patch('update/{categoryId}', 'CategoryController@update');
         $router->delete('delete/{categoryId}', 'CategoryController@delete');
     });
     $router->group(['prefix' => 'resource'], function($router) {
+        $router->get('', 'ResourceController@index');
         $router->post('create', 'ResourceController@create');
-        $router->post('{ressource_id}', 'ResourceController@findByID');
+        $router->get('{resourceId}', 'ResourceController@show');
+        $router->patch('update/{resourceId}', 'ResourceController@update');
+        $router->delete('delete/{resourceId}', 'ResourceController@delete');
+    });
+    $router->group(['prefix' => 'quizz'], function($router) {
+        $router->post('create', 'QuizController@quizCategory');
+        $router->post('question', 'QuizController@quizQuestion');
     });
 });
 

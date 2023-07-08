@@ -2,10 +2,16 @@
 
 namespace App\Services\EcoLearn;
 
+use App\EcoLearn\Models\Resource;
+use Illuminate\Support\Facades\DB;
 use App\Contracts\EcoLearn\CategoryServiceInterface;
 use App\Contracts\EcoLearn\ResourceServiceInterface;
-use App\Models\Ressources;
-use Illuminate\Support\Facades\DB;
+use App\EcoLearn\Models\Category;
+use App\EcoLearn\Models\User;
+use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class ResourceService implements ResourceServiceInterface
 {
@@ -14,48 +20,191 @@ class ResourceService implements ResourceServiceInterface
     ) {
     }
 
-    public function findByID(int $id): ?Ressources
+    /**
+     * Find resource by id
+     *
+     * @param integer $id
+     * @return Resource|null
+     */
+    public function find(int $id): ?Resource
     {
-        $ressource = DB::table('ressources')
-            ->where('ressource_id', $id)
-            ->first();
+        $resources = DB::table('ressources')
+                        ->where('ressource_id', $id)
+                        ->first();
 
-        if ($ressource) {
-            $creationDate   = to_datetime($ressource->created_at);
+        if ($resources) {
+            $creationDate   = to_datetime($resources->created_at);
 
-            $newRessource = new Ressources();
-            $newRessource->id                  = $ressource->ressource_id;
-            $newRessource->title               = $ressource->title;
-            $newRessource->description         = $ressource->description;
-            $newRessource->url                 = $ressource->url;
-            $newRessource->created_at          = $creationDate;
+            $newResource = new Resource();
+            $newResource->id                = $resources->ressource_id;
+            $newResource->category_id       = $resources->category_id;
+            $newResource->title             = $resources->title;
+            $newResource->description       = $resources->description;
+            $newResource->creationDate      = $creationDate;
+            $newResource->updatedDate       = $creationDate;
 
-            return $newRessource;
+            return $newResource;
         }
         return null;
     }
 
-    public function create(int $category_id, string $title, string $description, string $url): int
+    /**
+     * Resource index in Category
+     *
+     * @param Category $category
+     * @param string|null $field
+     * @param string|null $search
+     * @param integer|null $perPage
+     * @return Paginator
+     */
+    public function index(Category $category, ?string $field = null, ?string $search = null, ?int $perPage = null): Paginator
     {
-        $ressource = new Ressources();
-        $ressource->category_id     = $category_id;
-        $ressource->title           = $title;
-        $ressource->description     = $description;
-        $ressource->url             = $url;
+        $query = DB::table('ressources')
+                    ->where('category_id', $category->id)
+                    ->where(function($query) use ($field, $search) {
+                        $maps = [
+                            'id'            => 'ressource_id',
+                            'title'         => 'title',
+                            'description'   => 'description',
+                        ];
 
+                        if($search) {
+                            if(is_null($field) || $field === '') {
+                                $compare = '%' . Str::replaceArray(' ', ['%', ''], $search) . '%';
+                                $query
+                                    ->where('title', 'like', $compare)
+                                    ->orWhere('description', 'like', $compare);
+                            } else if(isset($maps[$field])) {
+                                $query->where($maps[$field], 'like', '%' . Str::replace(' ', '%', $search) . '%');
+                            }
+                        }
 
-        $category = $this->categoryService->findByID($category_id);
+                    });
 
-        if ($category) {
-            $ressource->save();
-            if ($ressource->save() == true) {
-                return 1;
+        return $query->paginate($perPage);
+    }
+
+    /**
+     * Create new Resource
+     *
+     * @param integer $category_id
+     * @param string $title
+     * @param string $description
+     * @param string $url
+     * @return integer
+     */
+    public function create(User $user, Category $category, string $title, string $description, string $url): ?int
+    {
+        $now = Carbon::now();
+        DB::beginTransaction();
+        try {
+            $categoryExists = DB::table('categories')
+                                ->where('category_id', $category->id)
+                                ->exists();
+
+            if (!$categoryExists) {
+                DB::rollBack();
+                return ERROR_CATEGORY_NOT_FOUND;
             }
-        } else {
-            return ERROR_CATEGORY_NOTFOUND;
+
+            $resourceId = DB::table('ressources')
+                        ->insertGetId([
+                            'category_id'   => $category->id,
+                            'title'         => $title,
+                            'description'   => $description,
+                            'url'           => $url,
+                            'created_at'    => $now
+                        ]);
+
+            $resource = $this->find($resourceId);
+            if($resource) {
+                DB::commit();
+                return SUCCESS_RESOURCE_CREATED;
+            }
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return ERROR_RESOURCE_CREATED;
         }
+        return null;
+    }
 
+    /**
+     * Update Resource
+     *
+     * @param Resource $resource
+     * @param string $title
+     * @param string $description
+     * @param string $url
+     * @return boolean
+     */
+    public function update(Resource $resource, Category $category, string $title, string $description, string $url): bool
+    {
+        DB::beginTransaction();
+        $now = Carbon::now();
 
-        return 0;
-    }   
+        try {
+            DB::table('ressources')
+                ->where('ressource_id', $resource->id)
+                ->update([
+                    'category_id'   => $category->id,
+                    'title'         => $title,
+                    'description'   => $description,
+                    'updated_at'    => $now
+                ]);
+
+            DB::commit();
+            return true;
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Log::error($th->getMessage(), [$th]);
+
+            return false;
+        }
+    }
+
+    /**
+     * Delete resource
+     *
+     * @param Resource $resource
+     * @return boolean
+     */
+    public function delete(Resource $resource): bool
+    {
+        DB::beginTransaction();
+        try {
+            // Verifier si la resource à des commentaires dessus
+            $comments = DB::table('comments')
+                            ->where('ressource_id', $resource->id)
+                            ->exists();
+            if($comments) {
+                DB::table('comments')
+                    ->where('ressource_id', $resource->id)
+                    ->delete();
+            }
+
+            // Récuperer la progression de l'utilisateur qui est liée au resource
+            $progress = DB::table('progress')
+                            ->where('ressource_id', $resource->id)
+                            ->get();
+            if($progress) {
+                DB::table('progress')
+                    ->where('ressource_id', $resource->id)
+                    ->delete();
+            }
+
+            $resource = DB::table('ressources')
+                            ->where('ressource_id', $resource->id)
+                            ->delete();
+            if($resource) {
+                DB::commit();
+                return true;
+            }
+            
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Log::error($th->getMessage(), [$th]);
+            return false;
+        }
+    }
 }

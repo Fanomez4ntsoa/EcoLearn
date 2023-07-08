@@ -23,9 +23,6 @@ class QuizService implements QuizServiceInterface
     {
         $quiz = DB::table('quizzes')
                     ->where('quiz_id', $id)
-                    ->where(function($query) {
-                        (new UnexpiredScope())->applyToBuilder($query, 'quizzes');
-                    })
                     ->first();
 
         if($quiz) {

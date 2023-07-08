@@ -20,12 +20,17 @@ return [
         ],
     ],
     'quizz'  => [
-        'create'    => 'Un nouveau Quiz a été créer.',
+        'created'    => 'Un nouveau Quiz a été créer.',
         'question'  => 'Nouveau quiz ajouter.'
     ],
     'category'  => [
         'created'   => 'Un nouveau categorie a été créer.',
         'updated' => 'Category mis à jours avec succès.',
         'deleted'   => ' La catégorie vient d\'être supprimé.'
-    ]
+    ],
+    'resource' => [
+        'created'   => 'Un nouveau ressource a été créer.',
+        'updated' => 'Ressource mis à jours avec succès.',
+        'deleted'   => ' La ressource vient d\'être supprimé.'
+    ],
 ];

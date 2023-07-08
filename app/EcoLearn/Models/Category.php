@@ -33,4 +33,11 @@ class Category
      * @var DateTimeInterface
      */
     public DateTimeInterface $creationDate;
+
+    /**
+     * Quiz updateDate
+     *
+     * @var DateTimeInterface
+     */
+    public DateTimeInterface $updatedDate;
 }

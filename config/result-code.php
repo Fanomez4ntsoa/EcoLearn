@@ -12,15 +12,22 @@ define('ERROR_PROFILE_UNDEFINED', 500401);
  */
 define('SUCCESS_QUIZZ_CREATED', 200400);
 define('ERROR_QUIZZ_CREATED', 500400);
-
-/**
- * Error Quiz
- */
 define('ERROR_QUIZ_EXISTS_FOR_CATEGORY', 500401);
-define('ERROR_CATEGORY_NOT_FOUND', 500404);
+
 
 /**
  * Category
  */
 define('SUCCESS_CATEGORY_CREATED', 200400);
 define('ERROR_CATEGORY_CREATED', 500400);
+
+/**
+ * Resource
+ */
+define('SUCCESS_RESOURCE_CREATED', 200400);
+define('ERROR_RESOURCE_CREATED', 500400);
+
+/**
+ * Global
+ */
+define('ERROR_CATEGORY_NOT_FOUND', 500404);
