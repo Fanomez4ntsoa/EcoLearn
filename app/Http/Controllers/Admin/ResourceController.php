@@ -27,7 +27,7 @@ class ResourceController extends Controller
     }
 
     /**
-     * Resources list with filtre
+     * Resources list with filter
      *
      * @param Request $request
      * @return ResourceResource|JsonResponse
@@ -35,7 +35,6 @@ class ResourceController extends Controller
     public function index(Request $request): ResourceResource|JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'profile'       => 'string',
             'category'      => 'required|integer',
             'field'         => 'nullable|string:|in:*,id,title,description',
             'search'        => 'nullable|string',
@@ -51,9 +50,7 @@ class ResourceController extends Controller
         }
 
         try {
-            $profile = $this->accountService->getProfile($request->profile);
-            
-            if($profile != ADMINISTRATION_ADMIN || !$this->guardService->allows(Auth::user(), ACCESS_ADMIN_CATEGORIES)) {
+            if(!$this->guardService->allows(Auth::user(), ACCESS_ADMIN_CATEGORIES)) {
                 return $this->error(
                     message:__('error.access.denied'),
                     httpCode: 401
@@ -95,6 +92,7 @@ class ResourceController extends Controller
         } catch (\Throwable $th) {
             Log::error($th->getMessage(), $th->getTrace());
         }
+        return $this->error();
     }
 
     /**
@@ -106,7 +104,6 @@ class ResourceController extends Controller
     public function create(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'profile'               => 'string',
             'category'              => 'required|integer',
             'title'                 => 'required|string|min:2|max:100',
             'description'           => 'required|string',
@@ -123,9 +120,8 @@ class ResourceController extends Controller
 
         try {
             $user = Auth::user();
-            $profile = $this->accountService->getProfile($request->profile);
 
-            if($profile != ADMINISTRATION_ADMIN || !$this->guardService->allows($user, ACCESS_ADMIN_CATEGORIES)) {
+            if(!$this->guardService->allows($user, ACCESS_ADMIN_CATEGORIES)) {
                 return $this->error(
                     message:__('error.access.denied'),
                     httpCode: 401
@@ -133,13 +129,6 @@ class ResourceController extends Controller
             }
 
             $category = $this->categoryService->find($request->category);
-            if(!$category) {
-                return $this->error(
-                    message:__('error.resource.category.not_found'),
-                    httpCode: 404
-                );
-            }
-
             $status = $this->resourceService->create($user, $category, $request->title, $request->description, $request->url);
 
             if($status != SUCCESS_RESOURCE_CREATED) {
@@ -148,11 +137,6 @@ class ResourceController extends Controller
                         message:__('error.resource.category.not_found'),
                         httpCode: 404
                     );    
-                } else {
-                    return $this->error(
-                        message:__('error.resource.create'),
-                        httpCode: 404
-                    );
                 }
             }
     
@@ -163,35 +147,25 @@ class ResourceController extends Controller
 
         } catch (\Throwable $th) {
             Log::error($th->getMessage(), $th->getTrace());
-            return $this->error();
+
+            return $this->error(
+                message:__('error.resource.create'),
+                httpCode: 404
+            );
         }
+        return $this->error();
     }
 
     /**
      * Get informations of resources
      *
-     * @param Request $request
      * @param integer $resourceId
      * @return JsonResponse
      */
-    public function show(Request $request, int $resourceId): ResourceResource|JsonResponse
+    public function show(int $resourceId): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'profile'       => 'string'
-        ]);
-
-        if($validator->fails()) {
-            return $this->error(
-                message:__('error.validations'),
-                data: $validator->errors(),
-                httpCode: 422
-            );
-        }
-
         try {
-            $profile = $this->accountService->getProfile($request->profile);
-            
-            if($profile != ADMINISTRATION_ADMIN || !$this->guardService->allows(Auth::user(), ACCESS_ADMIN_USER)) {
+            if(!$this->guardService->allows(Auth::user(), ACCESS_ADMIN_USER)) {
                 return $this->error(
                     message:__('error.access.denied'),
                     httpCode: 401
@@ -216,14 +190,16 @@ class ResourceController extends Controller
                     httpCode: 200
                 );
             }
+            
+        } catch (\Throwable $th) {
+            Log::error($th->getMessage(), [$th]);
+
             return $this->error(
                 message:__('error.user.not_found'),
                 httpCode: 404
             );
-
-        } catch (\Throwable $th) {
-            Log::error($th->getMessage(), [$th]);
         }
+        return $this->error();
     }
 
     /**
@@ -236,7 +212,6 @@ class ResourceController extends Controller
     public function update(Request $request, int $resourceId): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'profile'               => 'string',
             'category'              => 'required|integer',
             'title'                 => 'nullable|string|min:2|max:100',
             'description'           => 'nullable|string',
@@ -253,9 +228,8 @@ class ResourceController extends Controller
 
         try {
             $user = Auth::user();
-            $profile = $this->accountService->getProfile($request->profile);
 
-            if($profile != ADMINISTRATION_ADMIN || !$this->guardService->allows($user, ACCESS_ADMIN_CATEGORIES)) {
+            if(!$this->guardService->allows($user, ACCESS_ADMIN_CATEGORIES)) {
                 return $this->error(
                     message:__('error.access.denied'),
                     httpCode: 401
@@ -297,8 +271,8 @@ class ResourceController extends Controller
             
         } catch (\Throwable $th) {
             Log::error($th->getMessage(), $th->getTrace());
-            return $this->error();
         }
+        return $this->error();
     }
 
    /**
@@ -308,25 +282,11 @@ class ResourceController extends Controller
     * @param integer $resourceId
     * @return JsonResponse
     */
-    public function delete(Request $request, int $resourceId): JsonResponse
+    public function delete(int $resourceId): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'profile'       => 'string'
-        ]);
-
-        if($validator->fails()) {
-            return $this->error(
-                message:__('error.validations'),
-                data: $validator->errors(),
-                httpCode: 422
-            );
-        }
-
+        $user = Auth::user();
         try {
-            $user = Auth::user();
-            $profile = $this->accountService->getProfile($request->profile);
-
-            if($profile != ADMINISTRATION_ADMIN || !$this->guardService->allows($user, ACCESS_ADMIN_CATEGORIES)) {
+            if(!$this->guardService->allows($user, ACCESS_ADMIN_CATEGORIES)) {
                 return $this->error(
                     message:__('error.access.denied'),
                     httpCode: 401
@@ -348,18 +308,15 @@ class ResourceController extends Controller
                     httpCode: 202
                 );
             }
-            throw new Exception(__('error.resource.delete'), 403);
             
         } catch (\Throwable $th) {
             Log::error($th->getMessage(), [$th]);
             
             return $this->error(
-                message: __('error.default'),
+                message: __('error.resource.delete'),
                 httpCode: 403
             );
         }
-        return $this->error(
-            message:__('error.default'), 
-        );
+        return $this->error();
     }
 }

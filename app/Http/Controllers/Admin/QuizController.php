@@ -31,7 +31,6 @@ class QuizController extends Controller
     public function quizCategory(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'profile'       => 'string',
             'category'      => 'required|integer',
         ]);
 
@@ -45,9 +44,8 @@ class QuizController extends Controller
             }
     
             $user = Auth::user();
-            $profile = $this->accountService->getProfile($request->profile);
             
-            if($profile != ADMINISTRATION_ADMIN || !$this->guardService->allows($user, ACCESS_ADMIN_QUIZ)) {
+            if(!$this->guardService->allows($user, ACCESS_ADMIN_QUIZ)) {
                 return $this->error(
                     message:__('error.access.denied'),
                     httpCode: 401
@@ -66,11 +64,6 @@ class QuizController extends Controller
                     return $this->error(
                         message:__('error.quizz.category.exists'),
                         httpCode: 403
-                    );    
-                } else {
-                    return $this->error(
-                        message:__('error.quizz.create'),
-                        httpCode: 404
                     );
                 }
             }
@@ -83,7 +76,13 @@ class QuizController extends Controller
 
         } catch (\Throwable $th) {
             Log::error($th->getMessage(), [$th]);
+
+            return $this->error(
+                message:__('error.quizz.create'),
+                httpCode: 404
+            );
         }
+        return $this->error();
     }
 
     /**
@@ -95,41 +94,45 @@ class QuizController extends Controller
     public function quizQuestion(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'profile'       => 'integer',
             'quiz_id'       => 'required|integer',
             'question'      => 'required|max:64'
         ]);
 
-        if($validator->fails()) {
-            return $this->error(
-                message:__('error.validations'),
-                data: $validator->errors(),
-                httpCode: 422
-            );
-        }
+        try {
+            if($validator->fails()) {
+                return $this->error(
+                    message:__('error.validations'),
+                    data: $validator->errors(),
+                    httpCode: 422
+                );
+            }
+    
+            $user = Auth::user();
+    
+            if(!$this->guardService->allows($user, ACCESS_ADMIN_QUIZ)) {
+                return $this->error(
+                    message:__('error.access.denied'),
+                    httpCode: 401
+                );
+            }
+    
+            $question = $this->quizService->questionQuiz($request->quiz_id, $request->question);
+            if($question) {
+                return $this->success(
+                    message:__('success.quizz.question'),
+                    data: $question,
+                    httpCode: 201
+                );
+            }
+    
+        } catch (\Throwable $th) {
+            Log::error($th->getMessage(), [$th]);
 
-        $user = Auth::user();
-        $profile = $this->accountService->getProfile($request->profile);
-
-        if($profile != ADMINISTRATION_ADMIN || !$this->guardService->allows($user, ACCESS_ADMIN_QUIZ)) {
-            return $this->error(
-                message:__('error.access.denied'),
-                httpCode: 401
-            );
-        }
-
-        $question = $this->quizService->questionQuiz($request->quiz_id, $request->question);
-        if(!$question) {
             return $this->error(
                 message:__('error.quizz.question'),
                 httpCode: 403
             );
         }
-
-        return $this->success(
-            message:__('success.quizz.question'),
-            data: $question,
-            httpCode: 201
-        );
+        return $this->error();
     }
 }
