@@ -31,6 +31,7 @@ return [
     'resource' => [
         'created'   => 'Un nouveau ressource a été créer.',
         'updated' => 'Ressource mis à jours avec succès.',
-        'deleted'   => ' La ressource vient d\'être supprimé.'
+        'deleted'   => ' La ressource vient d\'être supprimé.',
+        'informations'  => 'Les informations du ressource afficher ci-dessous'
     ],
 ];

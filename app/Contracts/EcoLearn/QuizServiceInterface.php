@@ -4,6 +4,7 @@ namespace App\Contracts\EcoLearn;
 
 use App\EcoLearn\Models\Quiz;
 use App\EcoLearn\Models\User;
+use App\Models\QuizQuestion as ModelsQuizQuestion;
 
 interface QuizServiceInterface
 {
@@ -27,10 +28,10 @@ interface QuizServiceInterface
     /**
      * Question quizz
      *
-     * @param User $user
      * @param integer $quiz
      * @param string $text
-     * @return string|null
+     * @param integer $resource
+     * @return ModelsQuizQuestion|integer
      */
-    public function questionQuiz(int $quizId, string $text): ?string;
+    public function questionQuiz(int $quizId, int $resourceId, string $text): ModelsQuizQuestion|int|null;
 }

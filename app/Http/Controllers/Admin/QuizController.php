@@ -11,13 +11,17 @@ use Illuminate\Support\Facades\Validator;
 use App\Contracts\EcoLearn\QuizServiceInterface;
 use App\Contracts\Security\GuardServiceInterface;
 use App\Contracts\EcoLearn\AccountServiceInterface;
+use App\Contracts\EcoLearn\CategoryServiceInterface;
+use App\Services\EcoLearn\ResourceService;
 
 class QuizController extends Controller
 {
     public function __construct(
         protected AccountServiceInterface $accountService,
         protected GuardServiceInterface $guardService,
-        protected QuizServiceInterface $quizService
+        protected QuizServiceInterface $quizService,
+        protected ResourceService $resourceService,
+        protected CategoryServiceInterface $categoryService,
     ) {
         $this->middleware('auth:api');
     }
@@ -53,7 +57,7 @@ class QuizController extends Controller
             }
 
             $status = $this->quizService->create($user, $request->category);
-            
+
             if($status != SUCCESS_QUIZZ_CREATED) {
                 if($status == ERROR_CATEGORY_NOT_FOUND) {
                     return $this->error(
@@ -65,22 +69,21 @@ class QuizController extends Controller
                         message:__('error.quizz.category.exists'),
                         httpCode: 403
                     );
+                } else {
+                    return $this->error(
+                        message:__('error.quizz.create'),
+                        httpCode: 404
+                    );
                 }
+            } else {
+                return $this->success(
+                    message:__('success.quizz.created'),
+                    httpCode: 201
+                );
             }
-    
-            return $this->success(
-                message:__('success.quizz.created'),
-                data: $status,
-                httpCode: 201
-            );
 
         } catch (\Throwable $th) {
             Log::error($th->getMessage(), [$th]);
-
-            return $this->error(
-                message:__('error.quizz.create'),
-                httpCode: 404
-            );
         }
         return $this->error();
     }
@@ -95,6 +98,7 @@ class QuizController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'quiz_id'       => 'required|integer',
+            'resource_id'   => 'required|integer',
             'question'      => 'required|max:64'
         ]);
 
@@ -115,23 +119,46 @@ class QuizController extends Controller
                     httpCode: 401
                 );
             }
-    
-            $question = $this->quizService->questionQuiz($request->quiz_id, $request->question);
-            if($question) {
+            
+            $quiz = $this->quizService->find($request->quiz_id);
+
+            if($quiz) {
+                $category = $this->categoryService->find($quiz->category);
+                $resource = $this->resourceService->find($request->resource_id);
+                if(!array_column($this->resourceService->findByCategory($category), 'id')) {
+                    return $this->error(
+                        message: __('error.resource.not_found'),
+                        httpCode: 403
+                    );
+                }
+                
+            }
+
+            $question = $this->quizService->questionQuiz($request->quiz_id, $request->resource_id, $request->question);
+            if($question != null) {
                 return $this->success(
                     message:__('success.quizz.question'),
-                    data: $question,
+                    data: [
+                        "category"  => $category->name,
+                        "ressource" => $resource->title,
+                        "question"  => $question->question_text
+                    ],
                     httpCode: 201
+                );
+            } else if($question == false ){
+                return $this->error(
+                    message:__('error.quizz.question_already'),
+                    httpCode: 404
+                );
+            } else {
+                return $this->error(
+                    message:__('error.quizz.quesiton'),
+                    httpCode: 403
                 );
             }
     
         } catch (\Throwable $th) {
             Log::error($th->getMessage(), [$th]);
-
-            return $this->error(
-                message:__('error.quizz.question'),
-                httpCode: 403
-            );
         }
         return $this->error();
     }

@@ -14,18 +14,11 @@ class Quiz
     public int $id;
 
     /**
-     * Quiz title
+     * Quiz category
      *
      * @var string
      */
-    public $title;
-
-    /**
-     * Quiz description
-     *
-     * @var string
-     */
-    public $description;
+    public $category;
 
     /**
      * Quiz creationDate

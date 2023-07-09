@@ -177,7 +177,7 @@ class ResourceController extends Controller
 
             if($resource) {
                 return $this->success(
-                    message:__('error.user_informations'),
+                    message:__('success.resource.informations'),
                     data: [
                         'resources' => [
                             'id'            => $resource->id,
@@ -195,7 +195,7 @@ class ResourceController extends Controller
             Log::error($th->getMessage(), [$th]);
 
             return $this->error(
-                message:__('error.user.not_found'),
+                message:__('error.resource.not_found'),
                 httpCode: 404
             );
         }
