@@ -20,7 +20,8 @@ return [
             'exists'    => 'Un quiz existe déjà pour la catégorie donnée.',
         ],
         'create'    => 'Erreur s\'est produite lors de la création d\'un quizz',
-        'question'  => 'Erreur lors de la création d\'un Question'
+        'question'  => 'Erreur lors de la création d\'un Question',
+        'question_already' => 'La question soumis existe déjà, veuillez inserer une nouvelle question svp. '
     ],
     'category'  => [
         'creation'   => 'Erreur s\'est produite lors de la création d\'un nouveau categorie.',

@@ -34,6 +34,7 @@ class QuizQuestion extends Model
      */
     protected $fillable = [
         'quiz_id',
+        'ressource_id',
         'question_text',
     ];
 

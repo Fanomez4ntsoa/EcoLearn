@@ -15,9 +15,6 @@ use App\Contracts\Security\GuardServiceInterface;
 
 class CategoryController extends Controller
 {
-    /**
-     * Create a new Controller instance
-     */
     public function __construct(
         protected CategoryServiceInterface $categoryService,
         protected AccountServiceInterface $accountService,
@@ -34,7 +31,6 @@ class CategoryController extends Controller
     public function create(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'profile'                => 'string',
             'name'                   => 'required|string|min:2|max:64',
             'description'            => 'required|string'
         ]);
@@ -49,9 +45,8 @@ class CategoryController extends Controller
             }
 
             $user = Auth::user();
-            $profile = $this->accountService->getProfile($request->profile);
             
-            if($profile != ADMINISTRATION_ADMIN || !$this->guardService->allows($user, ACCESS_ADMIN_CATEGORIES)) {
+            if(!$this->guardService->allows($user, ACCESS_ADMIN_CATEGORIES)) {
                 return $this->error(
                     message:__('error.access.denied'),
                     httpCode: 401
@@ -66,12 +61,16 @@ class CategoryController extends Controller
                     httpCode: 200,
                 );
             }
-            throw new Exception(__('error.category.creation'), 403);
-
+            
         } catch (\Throwable $th) {
             Log::error($th->getMessage(), $th->getTrace());
-            return $this->error();
+
+            return $this->error(
+                message:__('error.category.creation'),
+                httpCode: 403
+            );
         }
+        return $this->error();
     }
 
     /**
@@ -84,7 +83,6 @@ class CategoryController extends Controller
     public function update(Request $request, int $categoryId): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'profile'       => 'string',
             'name'          => 'nullable|string|min:2|max:64',
             'description'   => 'nullable|string'
         ]);
@@ -99,14 +97,14 @@ class CategoryController extends Controller
 
         try {
             $user = Auth::user();
-            $profile = $this->accountService->getProfile($request->profile);
             
-            if($profile != ADMINISTRATION_ADMIN || !$this->guardService->allows($user, ACCESS_ADMIN_CATEGORIES)) {
+            if(!$this->guardService->allows($user, ACCESS_ADMIN_CATEGORIES)) {
                 return $this->error(
                     message:__('error.access.denied'),
                     httpCode: 401
                 );
             }
+
             $updated = false;
             $category = $this->categoryService->find($categoryId);
 
@@ -124,12 +122,16 @@ class CategoryController extends Controller
                     httpCode: 200
                 );
             }
-            throw new Exception(__('error.category.update'), 403);
 
         } catch (\Throwable $th) {
             Log::error($th->getMessage(), [$th]);
-            return $this->error();
+
+            return $this->error(
+                message:__('error.category.update'), 
+                httpCode: 403
+            );
         }
+        return $this->error();
     }
 
     /**
@@ -139,23 +141,12 @@ class CategoryController extends Controller
      * @param integer $categoryId
      * @return JsonResponse
      */
-    public function delete(Request $request, int $categoryId): JsonResponse
+    public function delete(int $categoryId): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'profile'       => 'string'
-        ]);
-
-        if($validator->fails()) {
-            return $this->error(
-                message:__('error.validations'),
-                data: $validator->errors(),
-                httpCode: 422
-            );
-        }
+        $user = Auth::user();
 
         try {
-            $profile = $this->accountService->getProfile($request->profile);
-            if($profile != ADMINISTRATION_ADMIN || !$this->guardService->allows(Auth::user(), ACCESS_ADMIN_CATEGORIES)) {
+            if(!$this->guardService->allows($user, ACCESS_ADMIN_CATEGORIES)) {
                 return $this->error(
                     message:__('error.access.denied'),
                     httpCode: 401
@@ -171,19 +162,16 @@ class CategoryController extends Controller
                     httpCode: 202
                 );
             }
-            throw new Exception(__('error.category.delete'), 403);
             
         } catch (\Throwable $th) {
             Log::error($th->getMessage(), [$th]);
             
             return $this->error(
-                message: __('error.default'),
+                message: __('error.category.delete'),
                 httpCode: 403
             );
         }
-        return $this->error(
-            message:__('error.default'), 
-        );
+        return $this->error();
     }
 
 }

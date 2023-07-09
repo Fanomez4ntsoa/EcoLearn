@@ -6,6 +6,7 @@ use App\EcoLearn\Models\Resource;
 use App\EcoLearn\Models\Category;
 use App\EcoLearn\Models\User;
 use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Support\Collection;
 
 interface ResourceServiceInterface
 {
@@ -16,6 +17,14 @@ interface ResourceServiceInterface
      * @return Resource|null
      */
     public function find(int $id): ?Resource;
+
+    /**
+     * Find resource by category
+     *
+     * @param Category $category
+     * @return array|null
+     */
+    public function findByCategory(Category $category): ?array;
 
     /**
      * Resource index in Category

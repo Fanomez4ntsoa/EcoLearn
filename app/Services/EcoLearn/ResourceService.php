@@ -2,16 +2,16 @@
 
 namespace App\Services\EcoLearn;
 
-use App\EcoLearn\Models\Resource;
-use Illuminate\Support\Facades\DB;
-use App\Contracts\EcoLearn\CategoryServiceInterface;
-use App\Contracts\EcoLearn\ResourceServiceInterface;
-use App\EcoLearn\Models\Category;
-use App\EcoLearn\Models\User;
-use Illuminate\Contracts\Pagination\Paginator;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use App\EcoLearn\Models\User;
+use Illuminate\Support\Carbon;
+use App\EcoLearn\Models\Resource;
+use App\EcoLearn\Models\Category;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Contracts\Pagination\Paginator;
+use App\Contracts\EcoLearn\ResourceServiceInterface;
+use App\Contracts\EcoLearn\CategoryServiceInterface;
 
 class ResourceService implements ResourceServiceInterface
 {
@@ -44,6 +44,39 @@ class ResourceService implements ResourceServiceInterface
             $newResource->updatedDate       = $creationDate;
 
             return $newResource;
+        }
+        return null;
+    }
+
+    /**
+     * Find resource by category
+     *
+     * @param Category $category
+     * @return array|null
+     */
+    public function findByCategory(Category $category): ?array
+    {
+        $resources = DB::table('ressources')
+                        ->where('category_id', $category->id)
+                        ->get();
+        
+        if ($resources->isNotEmpty()) {
+            $newResources = [];
+    
+            foreach ($resources as $resource) {
+                $creationDate = to_datetime($resource->created_at);
+    
+                $newResource = new Resource();
+                $newResource->id = $resource->ressource_id;
+                $newResource->title = $resource->title;
+                $newResource->description = $resource->description;
+                $newResource->creationDate = $creationDate;
+                $newResource->updatedDate = $creationDate;
+    
+                $newResources[] = $newResource;
+            }
+    
+            return $newResources;
         }
         return null;
     }
@@ -173,7 +206,6 @@ class ResourceService implements ResourceServiceInterface
     {
         DB::beginTransaction();
         try {
-            // Verifier si la resource à des commentaires dessus
             $comments = DB::table('comments')
                             ->where('ressource_id', $resource->id)
                             ->exists();
@@ -183,7 +215,6 @@ class ResourceService implements ResourceServiceInterface
                     ->delete();
             }
 
-            // Récuperer la progression de l'utilisateur qui est liée au resource
             $progress = DB::table('progress')
                             ->where('ressource_id', $resource->id)
                             ->get();

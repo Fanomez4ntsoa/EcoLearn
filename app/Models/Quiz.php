@@ -11,14 +11,14 @@ class Quiz extends Model
      *
      * @var string
      */
-    protected $table = 'quizzes';
+    protected $table = "quizzes";
 
     /**
      * Primary key column
      *
      * @var string
      */
-    protected $primaryKey = 'quiz_id';
+    protected $primaryKey = "quiz_id";
 
     /**
      * Disable Eloquent Timestamp
@@ -33,8 +33,7 @@ class Quiz extends Model
      * @var array
      */
     protected $fillable = [
-        'title',
-        'description',
+        'category_id',
         'created_at',
     ];
 

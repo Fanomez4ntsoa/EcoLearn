@@ -2,14 +2,12 @@
 
 namespace App\Services\EcoLearn;
 
-use App\Contracts\EcoLearn\QuizServiceInterface;
 use App\EcoLearn\Models\Quiz;
 use App\EcoLearn\Models\User;
-use App\Models\Quiz as ModelsQuiz;
-use App\Models\QuizQuestion;
-use App\Models\Scopes\UnexpiredScope;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Contracts\EcoLearn\QuizServiceInterface;
+use App\Models\QuizQuestion as ModelsQuizQuestion;
 
 class QuizService implements QuizServiceInterface
 {
@@ -30,8 +28,7 @@ class QuizService implements QuizServiceInterface
 
             $quizzes = new Quiz();
             $quizzes->id            = $quiz->quiz_id;
-            $quizzes->title         = $quiz->title;
-            $quizzes->description   = $quiz->description;
+            $quizzes->category      = $quiz->category_id;
             $quizzes->creationDate  = $creationDate;
 
             return $quizzes;
@@ -49,32 +46,27 @@ class QuizService implements QuizServiceInterface
     public function create(User $user, int $category): ?int
     {
         $now = Carbon::now();
-
+        
         DB::beginTransaction();
         try {
-            // Vérifier si la catégorie existe dans la table "categories"
             $categoryExists = DB::table('categories')
                                 ->where('category_id', $category)
                                 ->exists();
-
+            
             if (!$categoryExists) {
-                // La catégorie n'existe pas, renvoyer une erreur ou gérer le cas approprié
                 DB::rollBack();
                 return ERROR_CATEGORY_NOT_FOUND;
             }
 
-            // Vérifier si un quiz existe déjà pour la catégorie donnée
             $quizExists = DB::table('quizzes')
                             ->where('category_id', $category)
                             ->exists();
-
+            
             if ($quizExists) {
-                // Un quiz existe déjà pour la catégorie donnée, renvoyer une erreur ou gérer le cas approprié
                 DB::rollBack();
                 return ERROR_QUIZ_EXISTS_FOR_CATEGORY;
             }
 
-            // Insérer un nouveau quiz
             $quizId = DB::table('quizzes')
                         ->insertGetId([
                             'category_id'   => $category,
@@ -94,25 +86,33 @@ class QuizService implements QuizServiceInterface
     }
 
     /**
-     * Add new Question into Quizz
+     * Question quizz
      *
-     * @param User $user
      * @param integer $quiz
      * @param string $text
-     * @return string|null
+     * @param integer $resource
+     * @return ModelsQuizQuestion|integer
      */
-    public function questionQuiz(int $quizId, string $text): ?string
+    public function questionQuiz(int $quizId, int $resourceId, string $text): ModelsQuizQuestion|int|null
     {
-        // Vérifier si un Quiz existe
-        $quizExists = ModelsQuiz::where('quiz_id', $quizId)
-                            ->first();
+        $quizExists = DB::table('quizzes')
+                        ->where('quiz_id', $quizId)
+                        ->first();
+
         if($quizExists) {
-            // Ajouter une question
-            $quizQuestion = QuizQuestion::create([
-                'quiz_id'           => $quizExists,
+            $questionExists = DB::table('quizQuestions')
+                                ->where('question_text', $text)
+                                ->exists();
+            
+            if($questionExists) {
+                return false;
+            }
+            
+            $quizQuestion = ModelsQuizQuestion::create([
+                'quiz_id'           => $quizId,
+                'ressource_id'      => $resourceId,
                 'question_text'     => $text
             ]);
-            
             $quizQuestion->save();
             return $quizQuestion;
         }

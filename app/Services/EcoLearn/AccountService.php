@@ -23,7 +23,6 @@ class AccountService implements AccountServiceInterface
     {
         $defaultProfileId = 1;
 
-        // Si aucun ID de profil n'est fourni, utiliser le profil par défaut (ADMINISTRATION_CLIENT)
         if($profileId === null) {
             $profileId = $defaultProfileId;
         }
@@ -33,17 +32,16 @@ class AccountService implements AccountServiceInterface
                         ->first();
 
             if(!$profile) {
-                // Si le profil n'est pas trouvé, utilisez à nouveau le profil par défaut
                 $profile = DB::table('profiles')
                             ->where('profile_id', $defaultProfileId)
                             ->first();
             };
 
-            return $profile ? $profile->name : '';
+            return $profile ? $profile->name : null;
             
         } catch (\Throwable $th) {
             Log::error($th->getMessage(), [$th]);
-            return '';
+            return null;
         }
     }
 }
