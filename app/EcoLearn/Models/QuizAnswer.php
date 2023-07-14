@@ -2,47 +2,47 @@
 
 namespace App\EcoLearn\Models;
 
-class QuizQuestion
+class QuizAnswer
 {
     /**
-     * Quiz id
+     * Answer id
      *
      * @var integer
      */
     public int $id;
 
     /**
-     * Quiz title
+     * Answer Id user
+     *
+     * @var string
+     */
+    public $user_id;
+
+    /**
+     * Answer Id Quiz
      *
      * @var string
      */
     public $quiz_id;
 
     /**
-     * Quiz title
+     * Answer Id question
      *
      * @var string
      */
-    public $resource_id;
+    public $question_id;
 
     /**
-     * Quiz description
+     * Answer selected option
      *
      * @var string
      */
-    public $question_text;
+    public $chosen_option;
 
     /**
-     * Quiz description
+     * Answer is Correct
      *
-     * @var string
+     * @var boolean
      */
-    public $answer_possibilities;
-
-    /**
-     * Quiz description
-     *
-     * @var string
-     */
-    public $correct_option;
+    public $is_correct;
 }

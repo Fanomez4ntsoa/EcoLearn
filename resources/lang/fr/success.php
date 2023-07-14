@@ -21,7 +21,9 @@ return [
     ],
     'quizz'  => [
         'created'    => 'Un nouveau Quiz a été créer.',
-        'question'  => 'Nouveau quiz ajouter.'
+        'question'  => 'Nouveau quiz ajouter.',
+        'deleted'   => ' Quiz supprimé.',
+        'answer'    => 'L\'utilisateur viens de soumettre ça réponse avec succès.'
     ],
     'category'  => [
         'created'   => 'Un nouveau categorie a été créer.',

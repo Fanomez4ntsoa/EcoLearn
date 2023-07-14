@@ -129,15 +129,19 @@ class ResourceController extends Controller
             }
 
             $category = $this->categoryService->find($request->category);
-            $status = $this->resourceService->create($user, $category, $request->title, $request->description, $request->url);
+            if(!$category) {
+                return $this->error(
+                    message:__('error.resource.category.not_found'),
+                    httpCode: 404
+                );    
+            }
 
+            $status = $this->resourceService->create($user, $category, $request->title, $request->description, $request->url);
             if($status != SUCCESS_RESOURCE_CREATED) {
-                if($status == ERROR_CATEGORY_NOT_FOUND) {
                     return $this->error(
-                        message:__('error.resource.category.not_found'),
-                        httpCode: 404
-                    );    
-                }
+                    message:__('error.resource.create'),
+                    httpCode: 404
+                );
             }
     
             return $this->success(
@@ -150,7 +154,7 @@ class ResourceController extends Controller
 
             return $this->error(
                 message:__('error.resource.create'),
-                httpCode: 404
+                httpCode: 500
             );
         }
         return $this->error();

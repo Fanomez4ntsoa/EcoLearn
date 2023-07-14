@@ -134,11 +134,12 @@ class ResourceService implements ResourceServiceInterface
             $categoryExists = DB::table('categories')
                                 ->where('category_id', $category->id)
                                 ->exists();
-
+                                
             if (!$categoryExists) {
                 DB::rollBack();
                 return ERROR_CATEGORY_NOT_FOUND;
             }
+            
 
             $resourceId = DB::table('ressources')
                         ->insertGetId([

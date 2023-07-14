@@ -19,9 +19,18 @@ return [
             'not_found'    => 'Le categorie séléctionner n\'existe pas ou à été supprimer. Veuillez le créer svp.',
             'exists'    => 'Un quiz existe déjà pour la catégorie donnée.',
         ],
+        'resource'  => [
+            'category'  => 'Le ressource séléctionner n\'existe pas dans la catégorie'
+        ],
+        'not_found'    => 'Le quiz séléctionner n\'existe pas ou à été supprimer. Veuillez le créer svp.',
         'create'    => 'Erreur s\'est produite lors de la création d\'un quizz',
         'question'  => 'Erreur lors de la création d\'un Question',
-        'question_already' => 'La question soumis existe déjà, veuillez inserer une nouvelle question svp. '
+        'question_already' => 'La question soumis existe déjà, veuillez inserer une nouvelle question svp. ',
+        'already_deleted'    => 'La quiz séléctionner n\'existe pas ou à déjà été supprimer. Veuillez vérifier svp.',
+        'answer' => [
+            'user' => 'La réponse soumis par l\'utilisateur existe déjà.',
+            'option'    => 'L\'option sélectionnée n\'est pas valide pour cette question'    
+        ]
     ],
     'category'  => [
         'creation'   => 'Erreur s\'est produite lors de la création d\'un nouveau categorie.',

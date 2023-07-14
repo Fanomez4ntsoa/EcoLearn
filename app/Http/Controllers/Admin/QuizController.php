@@ -97,9 +97,11 @@ class QuizController extends Controller
     public function quizQuestion(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'quiz_id'       => 'required|integer',
-            'resource_id'   => 'required|integer',
-            'question'      => 'required|max:64'
+            'quiz_id'                   => 'required|integer',
+            'resource_id'               => 'required|integer',
+            'question'                  => 'required|max:64',
+            'answer_possibilities'      => 'required|array',
+            'correct_option'            => 'required|string'
         ]);
 
         try {
@@ -112,7 +114,6 @@ class QuizController extends Controller
             }
     
             $user = Auth::user();
-    
             if(!$this->guardService->allows($user, ACCESS_ADMIN_QUIZ)) {
                 return $this->error(
                     message:__('error.access.denied'),
@@ -121,27 +122,32 @@ class QuizController extends Controller
             }
             
             $quiz = $this->quizService->find($request->quiz_id);
-
-            if($quiz) {
-                $category = $this->categoryService->find($quiz->category);
-                $resource = $this->resourceService->find($request->resource_id);
-                if(!array_column($this->resourceService->findByCategory($category), 'id')) {
-                    return $this->error(
-                        message: __('error.resource.not_found'),
-                        httpCode: 403
-                    );
-                }
-                
+            if(!$quiz) {
+                return $this->error(
+                    message:__('error.quizz.not_found'),
+                    httpCode: 403
+                );
             }
 
-            $question = $this->quizService->questionQuiz($request->quiz_id, $request->resource_id, $request->question);
+            $category = $this->categoryService->find($quiz->category);
+            $resource = $this->resourceService->find($request->resource_id);
+
+            if(!$resource || $resource->category_id !== $category->id) {
+                return $this->error(
+                    message: __('error.quizz.resource.category'),
+                    httpCode: 403
+                );
+            }
+
+            $question = $this->quizService->questionQuiz($request->quiz_id, $request->resource_id, $request->question, $request->answer_possibilities, $request->correct_option);
             if($question != null) {
                 return $this->success(
                     message:__('success.quizz.question'),
                     data: [
                         "category"  => $category->name,
                         "ressource" => $resource->title,
-                        "question"  => $question->question_text
+                        "question"  => $question->question_text,
+                        "correct"   => $question->correct_option
                     ],
                     httpCode: 201
                 );
@@ -159,7 +165,114 @@ class QuizController extends Controller
     
         } catch (\Throwable $th) {
             Log::error($th->getMessage(), [$th]);
+            return $this->error(__('error.default'), 404);
         }
         return $this->error();
     }
+
+    /**
+     * Delete Quiz Question
+     *
+     * @return JsonResponse
+     */
+    public function quizQuestionDelete(int $quizQuestionId): JsonResponse
+    {
+        $user = Auth::user();
+        try {
+            if(!$this->guardService->allows($user, ACCESS_ADMIN_QUIZ)) {
+                return $this->error(
+                    message:__('error.access.denied'),
+                    httpCode: 401
+                );
+            }
+
+            $quizQuestion = $this->quizService->findQuestion($quizQuestionId);
+            if(!$quizQuestion) {
+                return $this->error(
+                    message:__('error.quizz.already_deleted'),
+                    httpCode: 403
+                );
+            }
+            
+            $delete = $this->quizService->deleteQuestion($quizQuestion);
+            if($delete) {
+                return $this->success(
+                    message:__('success.quizz.deleted'),
+                    httpCode: 202
+                );
+            }
+            
+        } catch (\Throwable $th) {
+            Log::error($th->getMessage(), [$th]);
+        }
+        return $this->error();
+    }
+
+    /**
+     * Set answer for question Quiz
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function setAnswerQuestionQuiz(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'quiz_id'       => 'required|integer',
+            'question_id'   => 'required|integer',
+            'chosen_option' => 'required|string'
+        ]);
+
+        if($validator->fails()) {
+            return $this->error(
+                message:__('error.validations'),
+                data: $validator->errors(),
+                httpCode: 422
+            );
+        }
+
+        try {
+            $user = Auth::user();
+            if(!$this->guardService->allows($user, ACCESS_ADMIN_QUIZ)) {
+                return $this->error(
+                    message:__('error.access.denied'),
+                    httpCode: 401
+                );
+            }
+
+            $quiz = $this->quizService->find($request->quiz_id);
+            $question = $this->quizService->findQuestion($request->question_id);
+            if(!$quiz && !$question) {
+                return $this->error(
+                    message:__('error.quizz.not_found'),
+                    httpCode: 403
+                );
+            }
+
+            $answer = $this->quizService->answerQuiz($user, $quiz, $question, $request->chosen_option);
+            if($answer == ERROR_USER_ANSWER) {
+                return $this->error(
+                    message:__('error.quizz.answer.user'),
+                    httpCode: 403
+                );
+            } else if($answer == ERROR_QUIZ_ANSWER_OPTION) {
+                return $this->error(
+                    message:__('error.quizz.answer.option'),
+                    httpCode: 403
+                );
+            }
+
+            return $this->success(
+                message:__('success.quizz.answer'),
+                httpCode: 200
+            );
+
+
+        } catch (\Throwable $th) {
+            dd($th->getMessage());
+            Log::error($th->getMessage(), [$th]);
+            return $this->error(__('error.default'), 404);
+        }
+        return $this->error();
+    }
+    
 }

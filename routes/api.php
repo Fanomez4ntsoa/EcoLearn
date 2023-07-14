@@ -42,6 +42,8 @@ $router->group(['prefix' => 'admin', 'namespace' => 'Admin'], function($router) 
     $router->group(['prefix' => 'quizz'], function($router) {
         $router->post('create', 'QuizController@quizCategory');
         $router->post('question', 'QuizController@quizQuestion');
+        $router->post('answer', 'QuizController@setAnswerQuestionQuiz');
+        $router->delete('delete/{quizQuestionId}', 'QuizController@quizQuestionDelete');
     });
 });
 

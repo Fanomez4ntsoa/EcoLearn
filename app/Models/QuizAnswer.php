@@ -35,8 +35,9 @@ class QuizAnswer extends Model
     protected $fillable = [
         'user_id',
         'quiz_id',
-        'question_text',
-        'chosen_option'
+        'question_id',
+        'chosen_option',
+        'is_correct'
     ];
 
     public function question()

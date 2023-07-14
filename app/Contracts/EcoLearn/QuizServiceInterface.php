@@ -3,7 +3,10 @@
 namespace App\Contracts\EcoLearn;
 
 use App\EcoLearn\Models\Quiz;
+use App\EcoLearn\Models\QuizAnswer;
+use App\EcoLearn\Models\QuizQuestion;
 use App\EcoLearn\Models\User;
+use App\Models\QuizAnswer as ModelsQuizAnswer;
 use App\Models\QuizQuestion as ModelsQuizQuestion;
 
 interface QuizServiceInterface
@@ -15,6 +18,14 @@ interface QuizServiceInterface
      * @return Quiz|null
      */
     public function find(int $id): ?Quiz;
+
+    /**
+     * Find question by id
+     *
+     * @param integer $id
+     * @return QuizQuestion|null
+     */
+    public function findQuestion(int $id): ?QuizQuestion;
 
     /**
      * Add new quizz by Admin
@@ -33,5 +44,24 @@ interface QuizServiceInterface
      * @param integer $resource
      * @return ModelsQuizQuestion|integer
      */
-    public function questionQuiz(int $quizId, int $resourceId, string $text): ModelsQuizQuestion|int|null;
+    public function questionQuiz(int $quizId, int $resourceId, string $text, array $answerPossibilities, string $correctOption): ModelsQuizQuestion|int|null;
+
+    /**
+     * Quiz answer 
+     *
+     * @param User $user
+     * @param Quiz $quiz
+     * @param QuizQuestion $question
+     * @param string $selectedOption
+     * @return ModelsQuizAnswer|QuizAnswer|integer|null
+     */
+    public function answerQuiz(User $user, Quiz $quiz, QuizQuestion $question, string $selectedOption): ModelsQuizAnswer|QuizAnswer|int|null;
+
+    /**
+     * Delete question Quiz
+     *
+     * @param QuizQuestion $quizQuestion
+     * @return boolean
+     */
+    public function deleteQuestion(QuizQuestion $quizQuestion): ?bool;
 }

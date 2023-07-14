@@ -36,6 +36,8 @@ class QuizQuestion extends Model
         'quiz_id',
         'ressource_id',
         'question_text',
+        'answer_possibilities',
+        'correct_option'
     ];
 
     public function quiz()
