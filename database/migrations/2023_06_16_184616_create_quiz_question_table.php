@@ -14,7 +14,7 @@ return new class extends Migration
     {
         DB::statement("
             CREATE TABLE `quizQuestions` (
-                `question_id` BIGINT(20) UNSIGNED NOT NULL,
+                `question_id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
                 `quiz_id` BIGINT(20) UNSIGNED NOT NULL,
                 `question_text` VARCHAR(255),
                 PRIMARY KEY (`question_id`) USING BTREE,

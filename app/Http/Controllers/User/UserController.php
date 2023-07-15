@@ -49,13 +49,19 @@ class UserController extends Controller
 
             $status = $this->userService->create($request->email, $request->name, $request->username, $request->profile);
             
-            if($status === SUCCESS_USER_CREATED) {
-                return $this->success(
-                    message:__('success.user.created'),
-                    httpCode: 200,
-                );
+            if($status !== SUCCESS_USER_CREATED) {
+                if($status === ERROR_USER_EMAIL_INVALID) {
+                    return $this->error(
+                        message:__('error.user.email_invalid'),
+                        httpCode: 404,
+                    );
+                }
+                return $this->error(__('error.default'), 403);
             }
-            return $this->error();
+            return $this->success(
+                message:__('success.user.created'),
+                httpCode: 200,
+            );
 
         } catch (\Throwable $th) {
             Log::error($th->getMessage(), $th->getTrace());

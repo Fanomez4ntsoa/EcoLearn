@@ -50,7 +50,7 @@ class ResourceController extends Controller
         }
 
         try {
-            if(!$this->guardService->allows(Auth::user(), ACCESS_ADMIN_CATEGORIES)) {
+            if(!$this->guardService->allows(Auth::user(), ACCESS_ADMIN_RESOURCES)) {
                 return $this->error(
                     message:__('error.access.denied'),
                     httpCode: 401
@@ -121,7 +121,7 @@ class ResourceController extends Controller
         try {
             $user = Auth::user();
 
-            if(!$this->guardService->allows($user, ACCESS_ADMIN_CATEGORIES)) {
+            if(!$this->guardService->allows($user, ACCESS_ADMIN_RESOURCES)) {
                 return $this->error(
                     message:__('error.access.denied'),
                     httpCode: 401
@@ -233,7 +233,7 @@ class ResourceController extends Controller
         try {
             $user = Auth::user();
 
-            if(!$this->guardService->allows($user, ACCESS_ADMIN_CATEGORIES)) {
+            if(!$this->guardService->allows($user, ACCESS_ADMIN_RESOURCES)) {
                 return $this->error(
                     message:__('error.access.denied'),
                     httpCode: 401
@@ -290,7 +290,7 @@ class ResourceController extends Controller
     {
         $user = Auth::user();
         try {
-            if(!$this->guardService->allows($user, ACCESS_ADMIN_CATEGORIES)) {
+            if(!$this->guardService->allows($user, ACCESS_ADMIN_RESOURCES)) {
                 return $this->error(
                     message:__('error.access.denied'),
                     httpCode: 401

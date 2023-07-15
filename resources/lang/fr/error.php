@@ -3,13 +3,19 @@
 return [
     'default'       => 'Une erreur s\'est produite',
     'validations'    => 'Requête invalide.',
+    'auth'  => [
+        'password'  => 'Le mot de passe que vous avez saisi est invalide',
+        'email' => 'L\'adresse e-mail que vous avez saisie est invalide.'
+    ],
     'user'  => [
+        'email_invalid' => 'L\'adresse email soumis est valide. Veuillez vérifier votre adresse email',
         'collection' => 'Aucun utilisateur',
         'not_found' => 'Cette utilisateur n\'existe pas ou à été supprimer.',
         'delete' => "La suppression a échouer",
     ],
     'security'  => [
         'password'  => [
+            'set'   => 'Le mot de passe que vous avez saisi est invalide. Il doit comporter au moins 8 caractères, une lettre majuscule, un chiffre et un caractère spécial. Les espaces ne sont pas autorisés.',
             'token_invalid' => 'Jeton de mot de pass invalide ou expiré.',
             'old_invalid'   => 'L\'ancien mot de passe n\'est plus valid'
         ],

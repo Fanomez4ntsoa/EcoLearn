@@ -14,7 +14,7 @@ return new class extends Migration
     {
         DB::statement("
             CREATE TABLE `quizAnswers` (
-                `answer_id` BIGINT(20) UNSIGNED NOT NULL,
+                `answer_id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
                 `user_id` BIGINT(20) UNSIGNED NOT NULL,
                 `quiz_id` BIGINT(20) UNSIGNED NOT NULL,
                 `question_id` BIGINT(20) UNSIGNED NOT NULL,

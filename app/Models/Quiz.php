@@ -34,26 +34,7 @@ class Quiz extends Model
      */
     protected $fillable = [
         'category_id',
-        'created_at',
     ];
-
-    /**
-     * The attributes that should be cast
-     *
-     * @var array
-     */
-    protected $casts = [
-        'created_at'    => 'datetime'
-    ];
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($model) {
-            $model->created_at = $model->freshTimestamp();
-        });
-    }
 
     /**
      * Every quiz have just one category 

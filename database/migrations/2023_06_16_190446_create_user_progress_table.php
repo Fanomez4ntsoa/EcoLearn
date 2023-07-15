@@ -14,7 +14,7 @@ return new class extends Migration
     {
         DB::statement("
             CREATE TABLE `userProgress` (
-                `progress_id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                `user_progress_id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
                 `user_id` BIGINT UNSIGNED,
                 `category_id` BIGINT UNSIGNED,
                 `progress_percentage` INT,

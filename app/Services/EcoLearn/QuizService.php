@@ -28,12 +28,9 @@ class QuizService implements QuizServiceInterface
                     ->first();
 
         if($quiz) {
-            $creationDate   = to_datetime($quiz->created_at);
-
             $quizzes = new Quiz();
             $quizzes->id            = $quiz->quiz_id;
             $quizzes->category      = $quiz->category_id;
-            $quizzes->creationDate  = $creationDate;
 
             return $quizzes;
         }
@@ -85,22 +82,21 @@ class QuizService implements QuizServiceInterface
                 DB::rollBack();
                 return ERROR_CATEGORY_NOT_FOUND;
             }
-
+            
             $quizExists = DB::table('quizzes')
                             ->where('category_id', $category)
                             ->exists();
-            
+                            
             if ($quizExists) {
                 DB::rollBack();
                 return ERROR_QUIZ_EXISTS_FOR_CATEGORY;
             }
-
+            
             $quizId = DB::table('quizzes')
                         ->insertGetId([
                             'category_id'   => $category,
-                            'created_at'    => $now,
                         ]);
-
+                        
             $quizz = $this->find($quizId);
             if($quizz) {
                 DB::commit();
@@ -142,7 +138,7 @@ class QuizService implements QuizServiceInterface
                 'quiz_id'                   => $quizId,
                 'ressource_id'              => $resourceId,
                 'question_text'             => $text,
-                'answer_possibilities'      => $answerPossibilities,
+                'answer_possibilities'      => json_encode($answerPossibilities),
                 'correct_option'            => $correctOption
             ]);
             $quizQuestion->save();
@@ -164,16 +160,12 @@ class QuizService implements QuizServiceInterface
     {
         DB::beginTransaction();
         try {
-            // Vérification si l'utilisateur a déjà répondu à cette question du quizz
             $existingAnswer = DB::table('quizAnswers')
                                 ->where('user_id', $user->id)
                                 ->where('quiz_id', $quiz->id)
                                 ->where('question_id', $question->id)
                                 ->first();
 
-            
-
-            // Récupérer la question du quiz
             $questionId = DB::table('quizQuestions')
                             ->where('question_id', $question->id)
                             ->first();
@@ -182,14 +174,10 @@ class QuizService implements QuizServiceInterface
                 return ERROR_USER_ANSWER;
             }
 
-            // Vérifier si l'option sélectionner fait partie des réponses disponibles
             if(!isset(json_decode($questionId->answer_possibilities, true)[$selectedOption])) {
-                // L'option sélectionnée n'est pas valide pour cette question
                 return ERROR_QUIZ_ANSWER_OPTION;
             }
-            // dd($questionId->correct_option);
             if($existingAnswer) {
-                // Mettre à jour la réponse existante
                 DB::table('quizAnswers')
                     ->where('answer_id', $existingAnswer->answer_id)
                     ->update([
@@ -200,7 +188,6 @@ class QuizService implements QuizServiceInterface
                 return SUCCESS_USER_UPDATE_ANSWER;
 
             } else {
-                // Créer une nouvelle réponse pour l'utilisateur
                 $answer = ModelsQuizAnswer::create([
                     'user_id'       => $user->id,
                     'quiz_id'       => $quiz->id,
@@ -215,7 +202,6 @@ class QuizService implements QuizServiceInterface
             return SUCCESS_USER_ANSWER;
 
         } catch (\Throwable $th) {
-            dd($th->getMessage());
             Log::error($th->getMessage(), [$th]);
         }
         return null;

@@ -7,6 +7,7 @@ use App\EcoLearn\Models\User;
 use Illuminate\Support\Facades\Hash;
 use App\Contracts\User\UserServiceInterface;
 use App\Contracts\Security\PasswordServiceInterface;
+use App\EcoLearn\Libraries\Helpers\PasswordHelper;
 use App\Events\Security\PasswordResetEvent;
 use App\Events\Security\PasswordSetEvent;
 use Illuminate\Support\Carbon;
@@ -80,7 +81,12 @@ class PasswordService implements PasswordServiceInterface
     {
         $user = $this->userService->findByEmail($email);
         $validFrom = Carbon::now();
+        $token = Str::random(30);
+        $valid = PasswordHelper::isValid($password);
         if($user) {
+            if(!$valid) {
+                return false;
+            }
             $initialization = ($user->getHashedPassword() === '');
             DB::beginTransaction();
             try {
@@ -88,7 +94,7 @@ class PasswordService implements PasswordServiceInterface
                     ->where('user_id', $user->id)
                     ->update([
                         'password'              => Hash::make($password),
-                        'token'                 => null,
+                        'token'                 => $token,
                         'token_valid_from'      => $validFrom,
                         'token_valid_till'      => null,
                     ]);

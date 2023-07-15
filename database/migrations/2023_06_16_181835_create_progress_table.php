@@ -14,7 +14,7 @@ return new class extends Migration
     {
         DB::statement("
             CREATE TABLE `progress` (
-                `progress_id` BIGINT(20) UNSIGNED NOT NULL,
+                `progress_id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
                 `user_id` BIGINT(20) UNSIGNED NOT NULL,
                 `ressource_id` BIGINT(20) UNSIGNED NOT NULL,
                 `completed` BOOLEAN,

@@ -14,7 +14,7 @@ class ActivityLoggerService implements ActivityLoggerInterface
      *
      * @param string $comment
      * @param integer|null $userId
-     * @param integer|null $loginId
+     * @param integer|null $emailId
      * @param integer|null $groupId
      * @param integer|null $targetUserId
      * @param string|null $type

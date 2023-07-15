@@ -4,6 +4,7 @@ namespace App\Services\User;
 
 use App\Contracts\EcoLearn\AccountServiceInterface;
 use App\Contracts\User\UserServiceInterface;
+use App\EcoLearn\Libraries\Helpers\EmailHelper;
 use App\EcoLearn\Models\User;
 use App\Events\User\UserCreatedEvent;
 use Illuminate\Support\Str;
@@ -151,15 +152,18 @@ class UserService implements UserServiceInterface
 
         $now = Carbon::now();
         $token = Str::random(30);
+        $valid = EmailHelper::isValid($email);
         $tokenValidFrom = $now;
-
+        if(!$valid) {
+            return ERROR_USER_EMAIL_INVALID;
+        }
+        
         DB::beginTransaction();
         try {
             $userExists = DB::table('users')
                     ->where('email', $email)
                     ->exists();
                     
-            // Initialisation à true par défaut
             $newUser = true;
             
             if($userExists) {
@@ -175,7 +179,6 @@ class UserService implements UserServiceInterface
                         'Valid_Till'    => null
                     ]);
                 
-                // Utilisateur existant, donc $newUser est false
                 $newUser = false;
 
             } else {
@@ -218,23 +221,29 @@ class UserService implements UserServiceInterface
                     $accessList = [
                         ACCESS_CLIENT_USER          => '1',
                         ACCESS_CLIENT_RESOURCE      => '2',
-                        ACCESS_CLIENT_COMMENTAIRE   => '3',
-                        ACCESS_CLIENT_PROGRESS      => '4',
-                        ACCESS_CLIENT_STATISTIQUE   => '5'
+                        ACCESS_CLIENT_CATEGORIE     => '3',
+                        ACCESS_CLIENT_QUIZ          => '4',
+                        ACCESS_CLIENT_COMMENT       => '5',
+                        ACCESS_CLIENT_PROGRESS      => '6',
+                        ACCESS_CLIENT_STATISTIQUE   => '7'
                     ];
                 } else if($profileId != 1) {
                     $accessList = [
                         ACCESS_CLIENT_USER              => '1',
                         ACCESS_CLIENT_RESOURCE          => '2',
-                        ACCESS_CLIENT_COMMENTAIRE       => '3',
-                        ACCESS_CLIENT_PROGRESS          => '4',
-                        ACCESS_CLIENT_STATISTIQUE       => '5',
-                        ACCESS_ADMIN_PROFILES_ACCESS    => '6',
-                        ACCESS_ADMIN_CATEGORIES         => '7',
-                        ACCESS_ADMIN_BADGE              => '8',
-                        ACCESS_ADMIN_QUIZ               => '9',
-                        ACCESS_ADMIN_STATISTIQUE        => '10',
-                        ACCESS_ADMIN_USER               => '16'
+                        ACCESS_CLIENT_CATEGORIE         => '3',
+                        ACCESS_CLIENT_QUIZ              => '4',
+                        ACCESS_CLIENT_COMMENT           => '5',
+                        ACCESS_CLIENT_PROGRESS          => '6',
+                        ACCESS_CLIENT_STATISTIQUE       => '7',
+                        ACCESS_ADMIN_PROFILES_ACCESS    => '8',
+                        ACCESS_ADMIN_USER               => '9',
+                        ACCESS_ADMIN_CATEGORIES         => '10',
+                        ACCESS_ADMIN_RESOURCES          => '11',
+                        ACCESS_ADMIN_COMMENTS           => '12',
+                        ACCESS_ADMIN_BADGE              => '13',
+                        ACCESS_ADMIN_QUIZ               => '14',
+                        ACCESS_ADMIN_STATISTIQUE        => '15',
                     ];
                 }
                 

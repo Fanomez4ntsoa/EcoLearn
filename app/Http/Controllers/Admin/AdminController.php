@@ -116,6 +116,7 @@ class AdminController extends Controller
                     httpCode: 200
                 );
             }
+            return $this->error(__('error.user.not_found'), httpCode: 403);
 
         } catch (\Throwable $th) {
             Log::error($th->getMessage(), [$th]);

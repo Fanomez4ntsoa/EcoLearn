@@ -19,11 +19,4 @@ class Quiz
      * @var string
      */
     public $category;
-
-    /**
-     * Quiz creationDate
-     *
-     * @var DateTimeInterface
-     */
-    public DateTimeInterface $creationDate;
 }

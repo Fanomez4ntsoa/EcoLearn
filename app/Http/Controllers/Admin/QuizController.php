@@ -57,7 +57,7 @@ class QuizController extends Controller
             }
 
             $status = $this->quizService->create($user, $request->category);
-
+            
             if($status != SUCCESS_QUIZZ_CREATED) {
                 if($status == ERROR_CATEGORY_NOT_FOUND) {
                     return $this->error(
@@ -99,7 +99,7 @@ class QuizController extends Controller
         $validator = Validator::make($request->all(), [
             'quiz_id'                   => 'required|integer',
             'resource_id'               => 'required|integer',
-            'question'                  => 'required|max:64',
+            'question'                  => 'required|max:120',
             'answer_possibilities'      => 'required|array',
             'correct_option'            => 'required|string'
         ]);
@@ -164,6 +164,7 @@ class QuizController extends Controller
             }
     
         } catch (\Throwable $th) {
+            dd($th->getMessage());
             Log::error($th->getMessage(), [$th]);
             return $this->error(__('error.default'), 404);
         }
@@ -268,7 +269,6 @@ class QuizController extends Controller
 
 
         } catch (\Throwable $th) {
-            dd($th->getMessage());
             Log::error($th->getMessage(), [$th]);
             return $this->error(__('error.default'), 404);
         }
