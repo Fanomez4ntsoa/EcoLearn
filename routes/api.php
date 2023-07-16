@@ -40,6 +40,8 @@ $router->group(['prefix' => 'admin', 'namespace' => 'Admin'], function($router) 
         $router->delete('delete/{resourceId}', 'ResourceController@delete');
     });
     $router->group(['prefix' => 'quizz'], function($router) {
+        $router->get('', 'QuizController@index');
+        $router->get('{quizQuestionId}', 'QuizController@showQuizQuestion');
         $router->post('create', 'QuizController@quizCategory');
         $router->post('question', 'QuizController@quizQuestion');
         $router->post('answer', 'QuizController@setAnswerQuestionQuiz');

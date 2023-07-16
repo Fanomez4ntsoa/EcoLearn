@@ -5,9 +5,11 @@ namespace App\Contracts\EcoLearn;
 use App\EcoLearn\Models\Quiz;
 use App\EcoLearn\Models\QuizAnswer;
 use App\EcoLearn\Models\QuizQuestion;
+use App\EcoLearn\Models\Resource;
 use App\EcoLearn\Models\User;
 use App\Models\QuizAnswer as ModelsQuizAnswer;
 use App\Models\QuizQuestion as ModelsQuizQuestion;
+use Illuminate\Contracts\Pagination\Paginator;
 
 interface QuizServiceInterface
 {
@@ -26,6 +28,17 @@ interface QuizServiceInterface
      * @return QuizQuestion|null
      */
     public function findQuestion(int $id): ?QuizQuestion;
+
+    /**
+     * Quiz Question index in Resource
+     *
+     * @param Resource $resource
+     * @param string|null $field
+     * @param string|null $search
+     * @param integer|null $perPage
+     * @return Paginator
+     */
+    public function index(Resource $resource, string $field = null, string $search = null, int $perPage = null): Paginator;
 
     /**
      * Add new quizz by Admin

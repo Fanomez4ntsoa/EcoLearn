@@ -61,4 +61,11 @@ return [
     */
 
     'migrations'    => 'migrations',
+
+    /**
+     * Pagination
+     */
+    'pagination' => [
+        'length' => 10
+    ]
 ];

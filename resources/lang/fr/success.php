@@ -20,6 +20,7 @@ return [
         ],
     ],
     'quizz'  => [
+        'question_informations'  => 'Les informations des questions afficher ci-dessous',
         'created'    => 'Un nouveau Quiz a été créer.',
         'question'  => 'Nouveau quiz ajouter.',
         'deleted'   => ' Quiz supprimé.',
@@ -34,6 +35,7 @@ return [
         'created'   => 'Un nouveau ressource a été créer.',
         'updated' => 'Ressource mis à jours avec succès.',
         'deleted'   => ' La ressource vient d\'être supprimé.',
+        'collection_informations'  => 'Les informations des ressources afficher ci-dessous',
         'informations'  => 'Les informations du ressource afficher ci-dessous'
     ],
 ];

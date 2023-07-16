@@ -28,6 +28,7 @@ return [
         'resource'  => [
             'category'  => 'Le ressource séléctionner n\'existe pas dans la catégorie'
         ],
+        'collection'    => 'Aucun question relié à cette ressource.',
         'not_found'    => 'Le quiz séléctionner n\'existe pas ou à été supprimer. Veuillez le créer svp.',
         'create'    => 'Erreur s\'est produite lors de la création d\'un quizz',
         'question'  => 'Erreur lors de la création d\'un Question',

@@ -2,6 +2,7 @@
 
 namespace App\Services\EcoLearn;
 
+use Illuminate\Support\Str;
 use App\EcoLearn\Models\Quiz;
 use App\EcoLearn\Models\User;
 use Illuminate\Support\Carbon;
@@ -9,8 +10,10 @@ use Illuminate\Support\Facades\DB;
 use App\Contracts\EcoLearn\QuizServiceInterface;
 use App\EcoLearn\Models\QuizAnswer;
 use App\EcoLearn\Models\QuizQuestion;
+use App\EcoLearn\Models\Resource;
 use App\Models\QuizQuestion as ModelsQuizQuestion;
 use App\Models\QuizAnswer as ModelsQuizAnswer;
+use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Support\Facades\Log;
 
 class QuizService implements QuizServiceInterface
@@ -51,14 +54,55 @@ class QuizService implements QuizServiceInterface
 
         if($question) {
             $questions = new QuizQuestion();
-            $questions->id            = $question->question_id;
-            $questions->quiz_id       = $question->quiz_id;
-            $questions->resource_id   = $question->ressource_id;
-            $questions->question_text = $question->question_text;
+            $questions->id                          = $question->question_id;
+            $questions->quiz_id                     = $question->quiz_id;
+            $questions->resource_id                 = $question->ressource_id;
+            $questions->question_text               = $question->question_text;
+            $questions->answer_possibilities        = $question->answer_possibilities;
+            $questions->correct_option               = $question->correct_option;
 
             return $questions;
         }
         return null;
+    }
+
+    /**
+     * Quiz Question index in Resource
+     *
+     * @param Resource $resource
+     * @param string|null $field
+     * @param string|null $search
+     * @param integer|null $perPage
+     * @return Paginator
+     */
+    public function index(Resource $resource, ?string $field = null, ?string $search = null, ?int $perPage = null): Paginator
+    {
+        $query = DB::table('quizQuestions')
+                    ->where('ressource_id', $resource->id)
+                    ->where(function($query) use ($field, $search) {
+                        $maps = [
+                            'id'        => 'question_id',
+                            'quiz'      => 'quiz_id',
+                            'question'  => 'question_text',
+                            'answer'    => 'answer_possibilities',
+                            'correct'   => 'correct_option',
+                        ];
+
+                        if($search) {
+                            if(is_null($field) || $field === '') {
+                                $compare = '%' . Str::replaceArray(' ', ['%', ''], $search) . '%';
+                                $query
+                                    ->where('quiz', 'like', $compare)
+                                    ->orWhere('question', 'like', $compare)
+                                    ->orWhere('answer', 'like', $compare)
+                                    ->orWhere('correct', 'like', $compare);
+                            } else if(isset($maps[$field])) {
+                                $query->where($maps[$field], 'like', '%' . Str::replace(' ', '%', $search) . '%');
+                            }
+                        }
+                    });
+
+        return $query->paginate($perPage ?? config('database.pagination.length'));
     }
 
     /**
@@ -193,7 +237,7 @@ class QuizService implements QuizServiceInterface
                     'quiz_id'       => $quiz->id,
                     'question_id'   => $question->id,
                     'chosen_option' => $selectedOption,
-                    'is_correct'    => $selectedOption == $question->correct_option
+                    'is_correct'    => $selectedOption == $questionId->correct_option
                 ]);
                 $answer->save();
             }

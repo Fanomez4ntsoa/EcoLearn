@@ -74,7 +74,7 @@ class ResourceController extends Controller
             }
             
             return $this->success(
-                message: __('success.user.collection_informations'),
+                message: __('success.resource.collection_informations'),
                 data: [
                     'users' => ResourceResource::collection($resourceCollection), 
                     'pagination' => [
@@ -91,6 +91,7 @@ class ResourceController extends Controller
 
         } catch (\Throwable $th) {
             Log::error($th->getMessage(), $th->getTrace());
+            return $this->error(__('error.default'), 403);
         }
         return $this->error();
     }

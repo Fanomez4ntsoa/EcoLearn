@@ -27,6 +27,77 @@ class QuizController extends Controller
     }
 
     /**
+     * Index Quiz Question
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'resource'  => 'required|integer',
+            'field'     => 'nullable|string:|in:*,id,quiz,question,answer,correct',
+            'search'    => 'nullable|string',
+            'per_page'  => 'nullable|integer'
+        ]);
+
+        if($validator->fails()) {
+            return $this->error(
+                message:__('error.validations'),
+                data: $validator->errors(),
+                httpCode: 422
+            );
+        }
+
+        try {
+            $user = Auth::user();
+            if(!$this->guardService->allows($user, ACCESS_ADMIN_QUIZ)) {
+                return $this->error(
+                    message:__('error.access.denied'),
+                    httpCode: 401
+                );
+            }
+            $resource = $this->resourceService->find($request->resource);
+            $category = $this->categoryService->find($resource->category_id);
+
+            $quizQuestionCollection = $this->quizService->index(
+                resource: $resource,
+                field: $request->field,
+                search: $request->search,
+                perPage: $request->per_page
+            );
+
+            if($quizQuestionCollection->isEmpty()){
+                return $this->error(
+                    message:__('error.quizz.collection'),
+                    httpCode: 404
+                );
+            }
+
+            $quizQuestions = [];
+            foreach ($quizQuestionCollection as $quizQuestion) {
+                $quizQuestion->answer_possibilities = json_decode($quizQuestion->answer_possibilities, true);
+                $quizQuestions[] = $quizQuestion;
+            }
+
+            return $this->success(
+                message: __("success.quizz.question_informations"),
+                data: [
+                    'category'  => $category->name,
+                    'ressource' => $resource->title,
+                    'question'  => $quizQuestions
+                ],
+                httpCode: 200
+            );
+
+        } catch (\Throwable $th) {
+            Log::error($th->getMessage(), [$th]);
+            return $this->error(__('error.default'), httpCode: 403);
+        }
+        return $this->error();    
+    }
+
+    /**
      * Add new Quizz from category by Admin
      *
      * @param Request $request
@@ -164,9 +235,52 @@ class QuizController extends Controller
             }
     
         } catch (\Throwable $th) {
-            dd($th->getMessage());
             Log::error($th->getMessage(), [$th]);
             return $this->error(__('error.default'), 404);
+        }
+        return $this->error();
+    }
+
+    /**
+     * Get informations question Quiz
+     *
+     * @param integer $quizQuestionId
+     * @return JsonResponse
+     */
+    public function showQuizQuestion(int $quizQuestionId): JsonResponse
+    {
+        $user = Auth::user();
+        try {
+            if(!$this->guardService->allows($user, ACCESS_ADMIN_QUIZ)) {
+                return $this->error(
+                    message:__('error.access.denied'),
+                    httpCode: 401
+                );
+            }
+
+            $question = $this->quizService->findQuestion($quizQuestionId);
+            $question->answer_possibilities = json_decode($question->answer_possibilities, true);
+            $quizQuestions[] = $question;
+            
+            $resource = $this->resourceService->find($question->resource_id);
+            $category = $this->categoryService->find($resource->category_id);
+
+            if($question) {
+                return $this->success(
+                    message:__('success.quizz.question_informations'),
+                    data: [
+                        'category'  => $category->name,
+                        'ressource' => $resource->title,
+                        'question'  => $quizQuestions
+                    ],
+                    httpCode: 200
+                );
+            }
+            
+        } catch (\Throwable $th) {
+            Log::error($th->getMessage(), [$th]);
+
+            return $this->error(__('error.default'), httpCode: 403);
         }
         return $this->error();
     }
@@ -233,7 +347,7 @@ class QuizController extends Controller
 
         try {
             $user = Auth::user();
-            if(!$this->guardService->allows($user, ACCESS_ADMIN_QUIZ)) {
+            if(!$this->guardService->allows($user, ACCESS_CLIENT_QUIZ)) {
                 return $this->error(
                     message:__('error.access.denied'),
                     httpCode: 401
