@@ -1,0 +1,5 @@
+<?php
+
+define('ACTIVITY_PASSWORD_RESET', 'REPA');
+define('ACTIVITY_AUTH_SUCCESS', 'COATSU');
+define('ACTIVITY_AUTH_FAILED', 'COATFA');

@@ -23,9 +23,9 @@ $app = new Laravel\Lumen\Application(
     dirname(__DIR__)
 );
 
-// $app->withFacades();
+$app->withFacades();
 
-// $app->withEloquent();
+$app->withEloquent();
 
 /*
 |--------------------------------------------------------------------------
@@ -60,6 +60,18 @@ $app->singleton(
 */
 
 $app->configure('app');
+$app->configure('auth');
+$app->configure('database');
+$app->configure('hashing');
+$app->configure('jwt');
+$app->configure('result-code');
+$app->configure('access');
+$app->configure('mail');
+$app->configure('view');
+$app->configure('queue');
+$app->configure('activity');
+$app->configure('ecoLearn');
+$app->configure('constant');
 
 /*
 |--------------------------------------------------------------------------
@@ -72,13 +84,14 @@ $app->configure('app');
 |
 */
 
-// $app->middleware([
-//     App\Http\Middleware\ExampleMiddleware::class
-// ]);
+$app->middleware([
+    App\Http\Middleware\CorsMiddleware::class
+]);
 
-// $app->routeMiddleware([
-//     'auth' => App\Http\Middleware\Authenticate::class,
-// ]);
+$app->routeMiddleware([
+    'auth' => App\Http\Middleware\Authenticate::class,
+    'admin' => App\Http\Middleware\AdminMiddleware::class,
+]);
 
 /*
 |--------------------------------------------------------------------------
@@ -91,9 +104,27 @@ $app->configure('app');
 |
 */
 
-// $app->register(App\Providers\AppServiceProvider::class);
-// $app->register(App\Providers\AuthServiceProvider::class);
-// $app->register(App\Providers\EventServiceProvider::class);
+$app->register(App\Providers\AppServiceProvider::class);
+$app->register(\App\Providers\ExtensionServiceProvider::class);
+$app->register(App\Providers\AuthServiceProvider::class);
+$app->register(App\Providers\EventServiceProvider::class);
+$app->register(\Tymon\JWTAuth\Providers\LumenServiceProvider::class);
+$app->register(\Illuminate\Mail\MailServiceProvider::class);
+$app->register(\Illuminate\Notifications\NotificationServiceProvider::class);
+
+if (env('APP_ENV') === 'local') {
+    $app->register(Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
+}
+
+$app->alias('mail', \Illuminate\Mail\MailManager::class);
+$app->alias('mail.manager', \Illuminate\Mail\MailManager::class);
+$app->alias('mail.manager', \Illuminate\Contracts\Mail\Factory::class);
+
+$app->alias('mailer', \Illuminate\Mail\Mailer::class);
+$app->alias('mailer', \Illuminate\Contracts\Mail\Mailer::class);
+$app->alias('mailer', \Illuminate\Contracts\Mail\MailQueue::class);
+
+$app->alias('view', Illuminate\View\Factory::class);
 
 /*
 |--------------------------------------------------------------------------
@@ -110,6 +141,11 @@ $app->router->group([
     'namespace' => 'App\Http\Controllers',
 ], function ($router) {
     require __DIR__.'/../routes/web.php';
+    $router->group(['prefix' => 'api'], function () use ($router) {
+        require __DIR__ . '/../routes/api.php';
+    });
 });
+
+require 'helpers.php';
 
 return $app;
